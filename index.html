@@ -100,7 +100,6 @@
                     const data = await res.json();
                     
                     const displayName = file.name.replace('.json', '').replace(/^_/, '').replace(/-/g, ' ');
-                    // Mendukung struktur JSON berformat array langsung atau properti .chats
                     const chatList = Array.isArray(data) ? data : (data.chats || []);
 
                     const item = document.createElement('div');
@@ -135,7 +134,6 @@
             const bubble = document.createElement('div');
             bubble.className = 'message-bubble';
             
-            // Menangani struktur data fleksibel (baik format objek rapi maupun teks)
             const sender = chat.sender || "Informasi / Sistem";
             const message = chat.message || chat.text || JSON.stringify(chat);
             const dateStr = (chat.date && chat.time) ? `${chat.date} ${chat.time}` : "";

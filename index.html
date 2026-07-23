@@ -9,49 +9,37 @@
             --bg-color: #efeae2;
             --sidebar-bg: #ffffff;
             --chat-bg: #efeae2;
-            --outgoing-bg: #d9fdd3;
             --incoming-bg: #ffffff;
             --text-primary: #111b21;
             --text-secondary: #667781;
-            --accent: #00a884;
             --border-color: #e9edef;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-primary);
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            background-color: var(--bg-color); color: var(--text-primary);
+            height: 100vh; display: flex; justify-content: center; align-items: center;
         }
         .app-container {
             width: 100%; max-width: 1200px; height: 95vh;
             background: var(--sidebar-bg); border-radius: 12px;
-            box-shadow: 0 6px 18px rgba(0,0,0,0.1);
-            display: flex; overflow: hidden;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.1); display: flex; overflow: hidden;
         }
         .sidebar { width: 35%; background: #ffffff; border-right: 1px solid var(--border-color); display: flex; flex-direction: column; }
         .sidebar-header { padding: 16px; background: #f0f2f5; border-bottom: 1px solid var(--border-color); }
         .sidebar-header h2 { font-size: 18px; color: var(--text-primary); margin-bottom: 12px; }
-        .search-box input {
-            width: 100%; padding: 10px 14px; border-radius: 8px;
-            border: 1px solid var(--border-color); font-size: 14px; outline: none;
-        }
         .contact-list { flex: 1; overflow-y: auto; }
         .contact-item {
-            padding: 14px 16px; border-bottom: 1px solid var(--border-color);
-            cursor: pointer; transition: background 0.2s;
+            padding: 14px 16px; border-bottom: 1px solid var(--border-color); cursor: pointer; transition: background 0.2s;
         }
         .contact-item:hover, .contact-item.active { background: #f0f2f5; }
-        .contact-name { font-weight: 600; font-size: 15px; color: var(--text-primary); text-transform: capitalize; }
+        .contact-name { font-weight: 600; font-size: 15px; color: var(--text-primary); text-transform: uppercase; }
         .contact-meta { font-size: 12px; color: var(--text-secondary); }
         .chat-area { flex: 65%; display: flex; flex-direction: column; background: var(--chat-bg); }
         .chat-header { padding: 12px 20px; background: #f0f2f5; border-bottom: 1px solid var(--border-color); font-weight: 600; }
         .chat-messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
         .message-bubble {
-            max-width: 65%; padding: 8px 12px; border-radius: 8px;
+            max-width: 75%; padding: 8px 12px; border-radius: 8px;
             font-size: 14px; line-height: 1.4; word-wrap: break-word; white-space: pre-wrap;
             background: var(--incoming-bg); box-shadow: 0 1px 0.5px rgba(0,0,0,0.13);
         }
@@ -66,12 +54,9 @@
     <div class="sidebar">
         <div class="sidebar-header">
             <h2>Arsip Chat WhatsApp</h2>
-            <div class="search-box">
-                <input type="text" id="globalSearch" placeholder="Cari kontak...">
-            </div>
         </div>
         <div class="contact-list" id="contactList">
-            <div style="padding:20px; text-align:center; color:#667781;">Memindai daftar kontak...</div>
+            <div style="padding:20px; text-align:center; color:#667781;">Memindai kontak...</div>
         </div>
     </div>
 
@@ -91,31 +76,21 @@
         const contactListEl = document.getElementById('contactList');
         
         try {
-            // Mengambil daftar file publik langsung dari API Repository GitHub
-            // (Otomatis mendeteksi file apa saja yang ada di dalam repository Anda tanpa edit kode)
-            const repoApiUrl = "https://api.github.com/repos/adols/wa/contents/"; // Ganti jika nama repo berbeda, atau gunakan trik bawah
-            
-            // Cara paling aman dan universal tanpa hardcode nama repo:
-            // Kita baca halaman utama repo atau gunakan fetch direktori relatif jika didukung server, 
-            // tapi karena GitHub Pages adalah static site, kita bisa gunakan endpoint GitHub API publik:
             const pathParts = window.location.hostname.split('.');
-            let owner = pathParts[0]; // adolb
-            let repoPath = window.location.pathname.split('/')[1]; // wa
+            let owner = pathParts[0];
+            let repoPath = window.location.pathname.split('/')[1];
             
             const apiUrl = `https://api.github.com/repos/${owner}/${repoPath}/contents/`;
-            
             const response = await fetch(apiUrl);
-            if (!response.ok) throw new Error("Gagal mengambil daftar file repo");
+            if (!response.ok) throw new Error("Gagal mengambil daftar file");
             
             const files = await response.json();
-            
-            // Filter hanya file yang berformat .json dan bukan index.html
             const jsonFiles = files.filter(file => file.name.endsWith('.json'));
 
             contactListEl.innerHTML = "";
 
             if (jsonFiles.length === 0) {
-                contactListEl.innerHTML = "<div style='padding:20px; text-align:center; color:#667781;'>Belum ada file JSON. Silakan upload file JSON sejajar dengan index.html.</div>";
+                contactListEl.innerHTML = "<div style='padding:20px; text-align:center; color:#667781;'>Belum ada file JSON.</div>";
                 return;
             }
 
@@ -125,27 +100,27 @@
                     const data = await res.json();
                     
                     const displayName = file.name.replace('.json', '').replace(/^_/, '').replace(/-/g, ' ');
+                    // Mendukung struktur JSON berformat array langsung atau properti .chats
+                    const chatList = Array.isArray(data) ? data : (data.chats || []);
 
                     const item = document.createElement('div');
                     item.className = 'contact-item';
                     item.innerHTML = `
                         <div class="contact-name">${displayName}</div>
-                        <div class="contact-meta">${data.total_messages || data.chats.length} pesan</div>
+                        <div class="contact-meta">${chatList.length} pesan</div>
                     `;
                     item.addEventListener('click', () => {
                         document.querySelectorAll('.contact-item').forEach(el => el.classList.remove('active'));
                         item.classList.add('active');
-                        renderChat(displayName, data.chats);
+                        renderChat(displayName, chatList);
                     });
                     contactListEl.appendChild(item);
                 } catch (err) {
-                    console.error("Gagal memuat file:", file.name);
+                    console.error("Gagal memuat:", file.name);
                 }
             }
-
         } catch (error) {
-            console.error(error);
-            contactListEl.innerHTML = "<div style='padding:20px; text-align:center; color:red;'>Gagal memindai otomatis. Pastikan struktur file sejajar.</div>";
+            contactListEl.innerHTML = "<div style='padding:20px; text-align:center; color:red;'>Gagal memuat daftar kontak.</div>";
         }
     }
 
@@ -159,16 +134,24 @@
         chats.forEach(chat => {
             const bubble = document.createElement('div');
             bubble.className = 'message-bubble';
+            
+            // Menangani struktur data fleksibel (baik format objek rapi maupun teks)
+            const sender = chat.sender || "Informasi / Sistem";
+            const message = chat.message || chat.text || JSON.stringify(chat);
+            const dateStr = (chat.date && chat.time) ? `${chat.date} ${chat.time}` : "";
+
             bubble.innerHTML = `
-                <div class="message-sender">${chat.sender}</div>
-                <div>${escapeHTML(chat.message)}</div>
-                <div class="message-time">${chat.date} ${chat.time}</div>
+                <div class="message-sender">${escapeHTML(sender)}</div>
+                <div>${escapeHTML(message)}</div>
+                ${dateStr ? `<div class="message-time">${escapeHTML(dateStr)}</div>` : ''}
             `;
             messagesEl.appendChild(bubble);
         });
+        messagesEl.scrollTop = messagesEl.scrollHeight;
     }
 
     function escapeHTML(str) {
+        if (typeof str !== 'string') str = String(str);
         return str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
     }
 

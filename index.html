@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WhatsApp Chat Viewer & Converter</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <title>Arsip Chat WhatsApp</title>
     <style>
         :root {
             --bg-color: #efeae2;
@@ -20,38 +19,59 @@
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg-color); color: var(--text-primary);
-            height: 100vh; display: flex; justify-content: center; align-items: center; padding: 10px;
+            height: 100vh; overflow: hidden; display: flex; justify-content: center; align-items: center;
         }
         .app-container {
-            width: 100%; max-width: 1200px; height: 95vh;
-            background: var(--card-bg); border-radius: 12px;
-            box-shadow: 0 6px 18px rgba(0,0,0,0.1); display: flex; overflow: hidden;
+            width: 100%; max-width: 600px; height: 100vh;
+            background: var(--card-bg); display: flex; position: relative; overflow: hidden;
         }
-        .sidebar { width: 35%; background: #ffffff; border-right: 1px solid var(--border-color); display: flex; flex-direction: column; }
-        .sidebar-header { padding: 16px; background: #f0f2f5; border-bottom: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 10px; }
+        @media (min-width: 768px) {
+            .app-container { max-width: 1000px; height: 95vh; border-radius: 12px; box-shadow: 0 6px 18px rgba(0,0,0,0.1); }
+        }
+        
+        /* Panel Sidebar / Daftar Kontak */
+        .sidebar {
+            width: 100%; height: 100%; background: #ffffff; display: flex; flex-direction: column;
+            position: absolute; left: 0; top: 0; transition: transform 0.3s ease; z-index: 2;
+        }
+        @media (min-width: 768px) {
+            .sidebar { width: 35%; position: relative; border-right: 1px solid var(--border-color); }
+        }
+        .sidebar.hidden-mobile { transform: translateX(-100%); }
+        @media (min-width: 768px) {
+            .sidebar.hidden-mobile { transform: translateX(0); }
+        }
+
+        .sidebar-header { padding: 16px; background: #f0f2f5; border-bottom: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 8px; }
         .sidebar-header h2 { font-size: 16px; color: var(--text-primary); }
         
-        .settings-box { background: #ffffff; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 6px; font-size: 13px; }
-        .settings-box input, .settings-box select { width: 100%; padding: 6px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 13px; }
-
-        .upload-box {
-            background: #e7f8f5; border: 2px dashed var(--primary); padding: 8px;
-            border-radius: 6px; text-align: center; cursor: pointer; font-size: 12px; color: #005c4b; font-weight: 600;
-        }
-        .upload-box input { display: none; }
+        .settings-box { background: #ffffff; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 4px; font-size: 12px; }
+        .settings-box input, .settings-box select { width: 100%; padding: 5px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 12px; }
 
         .contact-list { flex: 1; overflow-y: auto; }
-        .contact-item { padding: 12px 16px; border-bottom: 1px solid var(--border-color); cursor: pointer; transition: background 0.2s; }
+        .contact-item { padding: 14px 16px; border-bottom: 1px solid var(--border-color); cursor: pointer; transition: background 0.2s; }
         .contact-item:hover, .contact-item.active { background: #f0f2f5; }
         .contact-name { font-weight: 600; font-size: 14px; text-transform: uppercase; }
         .contact-meta { font-size: 11px; color: var(--text-secondary); }
 
-        .chat-area { flex: 65%; display: flex; flex-direction: column; background: var(--bg-color); }
-        .chat-header { padding: 12px 20px; background: #f0f2f5; border-bottom: 1px solid var(--border-color); font-weight: 600; font-size: 15px; }
-        .chat-messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
+        /* Area Chat Full Screen */
+        .chat-area {
+            width: 100%; height: 100%; background: var(--bg-color); display: flex; flex-direction: column;
+            position: absolute; right: 0; top: 0; transform: translateX(100%); transition: transform 0.3s ease; z-index: 3;
+        }
+        @media (min-width: 768px) {
+            .chat-area { width: 65%; position: relative; transform: translateX(0); }
+        }
+        .chat-area.active-mobile { transform: translateX(0); }
+
+        .chat-header { padding: 12px 16px; background: #f0f2f5; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 12px; font-weight: 600; font-size: 15px; }
+        .back-btn { background: none; border: none; font-size: 20px; cursor: pointer; color: #005c4b; display: flex; align-items: center; }
+        @media (min-width: 768px) { .back-btn { display: none; } }
+
+        .chat-messages { flex: 1; padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
         
         .message-bubble {
-            max-width: 75%; padding: 8px 12px; border-radius: 8px;
+            max-width: 80%; padding: 8px 12px; border-radius: 8px;
             font-size: 13px; line-height: 1.4; word-wrap: break-word; white-space: pre-wrap;
             box-shadow: 0 1px 0.5px rgba(0,0,0,0.13); display: flex; flex-direction: column;
         }
@@ -66,9 +86,10 @@
 <body>
 
 <div class="app-container">
-    <div class="sidebar">
+    <!-- Sidebar / Daftar Kontak -->
+    <div class="sidebar" id="sidebarPanel">
         <div class="sidebar-header">
-            <h2>Arsip WhatsApp</h2>
+            <h2>Arsip Chat WhatsApp</h2>
             <div class="settings-box">
                 <label>Nama Anda di WhatsApp:</label>
                 <input type="text" id="myNameInput" placeholder="Ketik nama persis seperti di WA">
@@ -78,89 +99,69 @@
                     <option value="left">Saya di Kiri</option>
                 </select>
             </div>
-            <label class="upload-box">
-                📁 Upload File ZIP WhatsApp
-                <input type="file" id="zipInput" accept=".zip">
-            </label>
         </div>
         <div class="contact-list" id="contactList">
-            <div style="padding:20px; text-align:center; color:#667781; font-size:13px;">Silakan upload file ZIP Anda.</div>
+            <div style="padding:20px; text-align:center; color:#667781; font-size:13px;">Memuat daftar kontak...</div>
         </div>
     </div>
 
-    <div class="chat-area">
-        <div class="chat-header" id="chatHeader"><span>Pilih kontak di samping</span></div>
+    <!-- Area Chat Full Screen -->
+    <div class="chat-area" id="chatAreaPanel">
+        <div class="chat-header">
+            <button class="back-btn" id="backBtn">&#8592;</button>
+            <span id="chatHeaderTitle">Pilih kontak</span>
+        </div>
         <div class="chat-messages" id="chatMessages">
             <div class="empty-state">
                 <h3>Belum ada chat yang dipilih</h3>
-                <p>Atur nama Anda di panel kiri, lalu pilih chat untuk melihat tampilannya.</p>
+                <p>Pilih salah satu kontak dari daftar untuk melihat percakapan.</p>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-    let loadedChatsData = {};
+    let allChatsData = {};
 
-    document.getElementById('zipInput').addEventListener('change', async function(e) {
-        const file = e.target.files[0];
-        if (!file) return;
-
+    async function initViewer() {
         const contactListEl = document.getElementById('contactList');
-        contactListEl.innerHTML = "<div style='padding:20px; text-align:center; color:#667781; font-size:13px;'>Memproses ZIP...</div>";
-
+        
         try {
-            const zip = new JSZip();
-            const zipContent = await zip.loadAsync(file);
-            loadedChatsData = {};
+            const pathParts = window.location.hostname.split('.');
+            let owner = pathParts[0];
+            let repoPath = window.location.pathname.split('/')[1];
+            
+            const apiUrl = `https://api.github.com/repos/${owner}/${repoPath}/contents/`;
+            const response = await fetch(apiUrl);
+            if (!response.ok) throw new Error("Gagal mengambil daftar file");
+            
+            const files = await response.json();
+            const jsonFiles = files.filter(file => file.name.endsWith('.json') && file.name !== 'package.json');
+
             contactListEl.innerHTML = "";
 
-            for (let filename of Object.keys(zipContent.files)) {
-                if (filename.endsWith('.txt') && !filename.startsWith('__MACOSX') && !filename.includes('/_')) {
-                    const txtText = await zipContent.files[filename].async('string');
-                    const parsedChats = parseWhatsAppTXT(txtText);
+            if (jsonFiles.length === 0) {
+                contactListEl.innerHTML = "<div style='padding:20px; text-align:center; color:#667781; font-size:13px;'>Tidak ada file JSON ditemukan di repository.</div>";
+                return;
+            }
 
-                    const cleanName = filename.replace('.txt', '').replace('WhatsApp Chat dengan ', '').replace(/[\/\\]/g, '_');
+            for (let file of jsonFiles) {
+                try {
+                    const res = await fetch(file.download_url);
+                    const data = await res.json();
                     
-                    loadedChatsData[cleanName] = parsedChats;
-                    addContactItem(cleanName, parsedChats.length);
+                    const displayName = file.name.replace('.json', '').replace(/^_/, '').replace(/-/g, ' ');
+                    const chatList = data.chats ? data.chats : (Array.isArray(data) ? data : []);
+
+                    allChatsData[displayName] = chatList;
+                    addContactItem(displayName, chatList.length);
+                } catch (err) {
+                    console.error("Gagal memuat:", file.name);
                 }
             }
-
-            if (Object.keys(loadedChatsData).length === 0) {
-                contactListEl.innerHTML = "<div style='padding:20px; text-align:center; color:red; font-size:13px;'>File .txt tidak ditemukan.</div>";
-            }
-        } catch (err) {
-            console.error(err);
-            contactListEl.innerHTML = "<div style='padding:20px; text-align:center; color:red; font-size:13px;'>Gagal membaca ZIP.</div>";
+        } catch (error) {
+            contactListEl.innerHTML = "<div style='padding:20px; text-align:center; color:red; font-size:13px;'>Gagal memuat data repository.</div>";
         }
-    });
-
-    function parseWhatsAppTXT(text) {
-        const lines = text.split(/\r?\n/);
-        const chats = [];
-        const regex = /^[\u200E\u200F]?[\[\(]?(\d{1,2}[\/.-]\d{1,2}[\/.-]\d{2,4}),?\s+(\d{1,2}[:.]\d{2}(?:[:.]\d{2})?(?:\s+[AP]M)?)[\\]?\]?\s*[-–]?\s*([^:]+):\s+(.*)$/i;
-
-        let currentMessage = null;
-
-        lines.forEach(line => {
-            const match = line.match(regex);
-            if (match) {
-                if (currentMessage) chats.push(currentMessage);
-                currentMessage = {
-                    date: match[1].trim(),
-                    time: match[2].trim(),
-                    sender: match[3].trim(),
-                    message: match[4].trim()
-                };
-            } else {
-                if (currentMessage) {
-                    currentMessage.message += "\n" + line.trim();
-                }
-            }
-        });
-        if (currentMessage) chats.push(currentMessage);
-        return chats;
     }
 
     function addContactItem(name, totalMsg) {
@@ -174,25 +175,36 @@
         item.addEventListener('click', () => {
             document.querySelectorAll('.contact-item').forEach(el => el.classList.remove('active'));
             item.classList.add('active');
-            renderChat(name, loadedChatsData[name]);
+            renderChat(name, allChatsData[name]);
+
+            // Animasi pindah ke layar chat full screen di HP
+            document.getElementById('sidebarPanel').classList.add('hidden-mobile');
+            document.getElementById('chatAreaPanel').classList.add('active-mobile');
         });
         contactListEl.appendChild(item);
     }
 
+    // Tombol kembali di HP
+    document.getElementById('backBtn').addEventListener('click', () => {
+        document.getElementById('sidebarPanel').classList.remove('hidden-mobile');
+        document.getElementById('chatAreaPanel').classList.remove('active-mobile');
+    });
+
     function renderChat(contactName, chats) {
-        const headerEl = document.getElementById('chatHeader');
+        const headerTitleEl = document.getElementById('chatHeaderTitle');
         const messagesEl = document.getElementById('chatMessages');
         const myName = document.getElementById('myNameInput').value.trim().toLowerCase();
         const myPosition = document.getElementById('myPositionSelect').value;
 
-        headerEl.innerHTML = `<span>${contactName.toUpperCase()}</span>`;
+        headerTitleEl.textContent = contactName.toUpperCase();
         messagesEl.innerHTML = "";
+
+        if (!Array.isArray(chats)) return;
 
         chats.forEach(chat => {
             const bubble = document.createElement('div');
-            
-            // Cek apakah pengirim adalah "Saya" berdasarkan input nama
-            const isMe = myName !== "" && chat.sender.toLowerCase() === myName;
+            const sender = chat.sender || "Sistem";
+            const isMe = myName !== "" && sender.toLowerCase() === myName;
             
             if (myPosition === 'right') {
                 bubble.className = `message-bubble ${isMe ? 'outgoing' : 'incoming'}`;
@@ -201,9 +213,9 @@
             }
 
             bubble.innerHTML = `
-                <div class="message-sender">${escapeHTML(chat.sender)}</div>
-                <div>${escapeHTML(chat.message)}</div>
-                <div class="message-time">${escapeHTML(chat.date)} ${escapeHTML(chat.time)}</div>
+                <div class="message-sender">${escapeHTML(sender)}</div>
+                <div>${escapeHTML(chat.message || "")}</div>
+                ${chat.date && chat.time ? `<div class="message-time">${escapeHTML(chat.date)} ${escapeHTML(chat.time)}</div>` : ''}
             `;
             messagesEl.appendChild(bubble);
         });
@@ -214,6 +226,8 @@
         if (typeof str !== 'string') str = String(str);
         return str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
     }
+
+    initViewer();
 </script>
 
 </body>

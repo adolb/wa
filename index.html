@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Arsip Chat WhatsApp</title>
+    <!-- Library JSZip untuk ekstrak file ZIP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         :root {
             --bg-color: #efeae2;
@@ -14,24 +16,48 @@
             --border-color: #e9edef;
             --outgoing-bg: #d9fdd3;
             --incoming-bg: #ffffff;
+            --header-bg: #f0f2f5;
+            --hover-bg: #f0f2f5;
+            --input-bg: #ffffff;
+            --upload-bg: #e7f8f5;
+            --sender-color: #005c4b;
         }
+
+        /* TEMA GELAP (DARK MODE) */
+        body.dark-mode {
+            --bg-color: #0b141a;
+            --card-bg: #111b21;
+            --primary: #00a884;
+            --text-primary: #e9edef;
+            --text-secondary: #8696a0;
+            --border-color: #222d34;
+            --outgoing-bg: #005c4b;
+            --incoming-bg: #202c33;
+            --header-bg: #202c33;
+            --hover-bg: #2a3942;
+            --input-bg: #202c33;
+            --upload-bg: #112b25;
+            --sender-color: #00a884;
+        }
+
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg-color); color: var(--text-primary);
             height: 100vh; overflow: hidden; display: flex; justify-content: center; align-items: center;
+            transition: background-color 0.3s, color 0.3s;
         }
         .app-container {
             width: 100%; max-width: 600px; height: 100vh;
             background: var(--card-bg); display: flex; position: relative; overflow: hidden;
         }
         @media (min-width: 768px) {
-            .app-container { max-width: 1000px; height: 95vh; border-radius: 12px; box-shadow: 0 6px 18px rgba(0,0,0,0.1); }
+            .app-container { max-width: 1000px; height: 95vh; border-radius: 12px; box-shadow: 0 6px 18px rgba(0,0,0,0.15); }
         }
         
         /* Panel Sidebar / Daftar Kontak */
         .sidebar {
-            width: 100%; height: 100%; background: #ffffff; display: flex; flex-direction: column;
+            width: 100%; height: 100%; background: var(--card-bg); display: flex; flex-direction: column;
             position: absolute; left: 0; top: 0; transition: transform 0.3s ease; z-index: 2;
         }
         @media (min-width: 768px) {
@@ -42,33 +68,45 @@
             .sidebar.hidden-mobile { transform: translateX(0); }
         }
 
-        .sidebar-header { padding: 12px 16px; background: #f0f2f5; border-bottom: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 8px; }
-        .sidebar-header h2 { font-size: 16px; color: var(--text-primary); }
+        .sidebar-header { padding: 12px 16px; background: var(--header-bg); border-bottom: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 12px; }
+        
+        /* Area Header Atas (Judul + Ikon Gerigi) */
+        .sidebar-header-top { display: flex; justify-content: space-between; align-items: center; }
+        .sidebar-header h2 { font-size: 16px; color: var(--text-primary); margin: 0; }
+        
+        /* Ikon Gerigi Elegan */
+        .settings-btn {
+            background: transparent; border: none; cursor: pointer; color: var(--text-secondary);
+            display: flex; align-items: center; justify-content: center; padding: 6px; 
+            border-radius: 50%; transition: background 0.2s, color 0.2s;
+        }
+        .settings-btn:hover { background: var(--hover-bg); color: var(--text-primary); }
+        .settings-btn svg { width: 22px; height: 22px; fill: currentColor; }
         
         /* Pencarian Global Semua File JSON */
         .global-search-box { position: relative; width: 100%; }
-        .search-input { width: 100%; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; outline: none; background: #fff; }
+        .search-input { width: 100%; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; outline: none; background: var(--input-bg); color: var(--text-primary); }
         .search-input:focus { border-color: var(--primary); }
         
         .global-dropdown {
-            position: absolute; top: 100%; left: 0; right: 0; background: #ffffff;
+            position: absolute; top: 100%; left: 0; right: 0; background: var(--card-bg);
             border: 1px solid var(--border-color); border-radius: 0 0 8px 8px;
             max-height: 280px; overflow-y: auto; display: none; z-index: 20;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
         }
-        .global-result-item { padding: 10px 12px; border-bottom: 1px solid #f0f0f0; cursor: pointer; transition: background 0.2s; }
-        .global-result-item:hover { background: #f5f6f6; }
+        .global-result-item { padding: 10px 12px; border-bottom: 1px solid var(--border-color); cursor: pointer; transition: background 0.2s; }
+        .global-result-item:hover { background: var(--hover-bg); }
         .global-result-contact { font-size: 11px; font-weight: bold; color: var(--primary); text-transform: uppercase; margin-bottom: 2px; }
         .global-result-text { font-size: 12px; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .global-result-meta { font-size: 10px; color: var(--text-secondary); margin-top: 3px; }
 
         .contact-list { flex: 1; overflow-y: auto; }
         .contact-item { padding: 12px 16px; border-bottom: 1px solid var(--border-color); cursor: pointer; transition: background 0.2s; display: flex; justify-content: space-between; align-items: center; }
-        .contact-item:hover, .contact-item.active { background: #f0f2f5; }
+        .contact-item:hover, .contact-item.active { background: var(--hover-bg); }
         .contact-name { font-weight: 600; font-size: 14px; text-transform: uppercase; }
         .contact-meta { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
-        .edit-btn { background: #e9edef; color: var(--text-primary); border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; cursor: pointer; font-weight: 500; }
-        .edit-btn:hover { background: #d1d7db; }
+        .edit-btn { background: var(--hover-bg); color: var(--text-primary); border: 1px solid var(--border-color); padding: 4px 8px; border-radius: 4px; font-size: 11px; cursor: pointer; font-weight: 500; }
+        .edit-btn:hover { background: var(--border-color); }
 
         /* Area Chat Full Screen */
         .chat-area {
@@ -80,20 +118,19 @@
         }
         .chat-area.active-mobile { transform: translateX(0); }
 
-        .chat-header { padding: 8px 12px; background: #f0f2f5; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; gap: 8px; font-weight: 600; font-size: 15px; }
+        .chat-header { padding: 8px 12px; background: var(--header-bg); border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; gap: 8px; font-weight: 600; font-size: 15px; }
         .header-left { display: flex; align-items: center; gap: 8px; overflow: hidden; }
-        .back-btn { background: none; border: none; font-size: 20px; cursor: pointer; color: #005c4b; display: flex; align-items: center; }
+        .back-btn { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--primary); display: flex; align-items: center; }
         @media (min-width: 768px) { .back-btn { display: none; } }
 
-        /* Komponen Pencarian Dalam Chat + Tombol Scroll 1, 2, 3 */
         .chat-search-container {
-            display: flex; align-items: center; background: #ffffff; border: 1px solid var(--border-color);
+            display: flex; align-items: center; background: var(--input-bg); border: 1px solid var(--border-color);
             border-radius: 6px; padding: 2px 6px; gap: 4px; min-width: 170px;
         }
-        .chat-search-input { border: none; outline: none; font-size: 12px; width: 80px; }
+        .chat-search-input { border: none; outline: none; font-size: 12px; width: 80px; background: transparent; color: var(--text-primary); }
         .search-counter { font-size: 11px; color: var(--text-secondary); min-width: 35px; text-align: center; }
         .search-nav-btn { background: none; border: none; cursor: pointer; font-size: 12px; padding: 2px 4px; color: var(--text-secondary); border-radius: 3px; }
-        .search-nav-btn:hover { background: #e9edef; color: var(--text-primary); }
+        .search-nav-btn:hover { background: var(--hover-bg); color: var(--text-primary); }
 
         .chat-messages { flex: 1; padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; scroll-behavior: smooth; }
         
@@ -106,31 +143,107 @@
         .message-bubble.outgoing { background: var(--outgoing-bg); align-self: flex-end; }
         .message-bubble.incoming { background: var(--incoming-bg); align-self: flex-start; }
         
-        .message-sender { font-size: 11px; font-weight: bold; color: #005c4b; margin-bottom: 2px; }
+        .message-sender { font-size: 11px; font-weight: bold; color: var(--sender-color); margin-bottom: 2px; }
         .message-time { font-size: 9px; color: var(--text-secondary); text-align: right; margin-top: 3px; }
         .empty-state { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; color: var(--text-secondary); text-align: center; padding: 20px; }
         
-        /* Highlight Sorotan Teks */
         .highlight { background-color: #ffeb3b; color: #000; padding: 1px 2px; border-radius: 2px; }
         .highlight.active-match { background-color: #ff9800; color: #fff; font-weight: bold; }
+
+        /* MODAL UPLOAD & PENGATURAN */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(3px);
+            display: none; justify-content: center; align-items: center; z-index: 999;
+            opacity: 0; transition: opacity 0.3s ease;
+        }
+        .modal-overlay.show { display: flex; opacity: 1; }
+        
+        .modal-content {
+            background: var(--card-bg); color: var(--text-primary); width: 90%; max-width: 400px;
+            border-radius: 12px; box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+            border: 1px solid var(--border-color); overflow: hidden; transform: translateY(20px); transition: transform 0.3s ease;
+        }
+        .modal-overlay.show .modal-content { transform: translateY(0); }
+
+        .modal-header {
+            padding: 16px 20px; background: var(--primary); color: white;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .modal-header h3 { margin: 0; font-size: 16px; font-weight: 600; }
+        .close-modal-btn { background: transparent; border: none; color: white; font-size: 24px; cursor: pointer; line-height: 1; }
+        
+        .modal-body { padding: 20px; display: flex; flex-direction: column; gap: 15px; }
+        .input-group { display: flex; flex-direction: column; gap: 6px; }
+        .input-group label { font-size: 12px; font-weight: 600; color: var(--text-secondary); }
+        .input-group input[type="text"] {
+            padding: 10px; border: 1px solid var(--border-color); border-radius: 6px;
+            font-size: 13px; outline: none; background: var(--input-bg); color: var(--text-primary); transition: border 0.2s;
+        }
+        .input-group input[type="text"]:focus { border-color: var(--primary); }
+        
+        .upload-section { background: var(--upload-bg); border: 2px dashed var(--primary); padding: 15px; border-radius: 8px; text-align: center; }
+        .upload-section input[type="file"] { display: none; }
+        .upload-btn { background: var(--primary); color: white; border: none; padding: 10px 14px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; width: 100%; transition: background 0.2s;}
+        .upload-btn:hover { background: #008f6f; }
+
+        #uploadFormArea { display:none; flex-direction: column; gap: 12px; margin-top: 5px;}
+
+        /* SEKSI TEMA TAMPILAN */
+        .theme-section {
+            border-top: 1px solid var(--border-color);
+            padding-top: 15px;
+            margin-top: 5px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .theme-btn {
+            background: var(--hover-bg);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: background 0.2s, border-color 0.2s;
+        }
+        .theme-btn:hover { background: var(--border-color); }
     </style>
 </head>
 <body>
 
 <div class="app-container">
+    <!-- Sidebar / Daftar Kontak -->
     <div class="sidebar" id="sidebarPanel">
         <div class="sidebar-header">
-            <h2>Arsip Chat WhatsApp</h2>
+            <div class="sidebar-header-top">
+                <h2>Arsip Chat WhatsApp</h2>
+                <!-- Tombol Gerigi untuk Buka Modal Pengaturan -->
+                <button class="settings-btn" id="openUploadModalBtn" title="Pengaturan & Upload">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.06-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.73,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.06,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.43-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.49-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/>
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Pencarian Global Semua File JSON -->
             <div class="global-search-box">
                 <input type="text" id="globalSearch" class="search-input" placeholder="Cari di semua file JSON..." onkeyup="handleGlobalSearch()">
                 <div id="globalDropdown" class="global-dropdown"></div>
             </div>
         </div>
         <div class="contact-list" id="contactList">
-            <div style="padding:20px; text-align:center; color:#667781; font-size:13px;">Memuat daftar kontak...</div>
+            <div style="padding:20px; text-align:center; color:var(--text-secondary); font-size:13px;">Memuat daftar kontak...</div>
         </div>
     </div>
 
+    <!-- Area Chat Full Screen -->
     <div class="chat-area" id="chatAreaPanel">
         <div class="chat-header">
             <div class="header-left">
@@ -154,26 +267,228 @@
     </div>
 </div>
 
+<!-- =========================================
+     MODAL PENGATURAN & UPLOAD
+     ========================================= -->
+<div class="modal-overlay" id="uploadModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Pengaturan & Upload</h3>
+            <button class="close-modal-btn" id="closeUploadModalBtn">&times;</button>
+        </div>
+        <div class="modal-body">
+            
+            <!-- Fungsi Upload ZIP -->
+            <div class="upload-section">
+                <p style="font-size: 12px; color:var(--text-secondary); margin-bottom:10px;">Pilih file arsip .ZIP ekspor dari WhatsApp Anda.</p>
+                <input type="file" id="zipFileInput" accept=".zip">
+                <button type="button" class="upload-btn" onclick="document.getElementById('zipFileInput').click()">Pilih File ZIP</button>
+            </div>
+
+            <!-- Form Edit Nama & Tombol Kirim (Muncul setelah ZIP dipilih) -->
+            <div id="uploadFormArea">
+                <div class="input-group">
+                    <label>Rename Nama Kontak (Otomatis diekstrak)</label>
+                    <input type="text" id="renameInput" placeholder="Nama kontak baru">
+                </div>
+                <button type="button" class="upload-btn" onclick="processAndUploadZIP()">Ubah ke JSON & Upload</button>
+            </div>
+
+            <!-- Fungsi Ganti Tema (Tanpa Ikon Matahari/Bulan) -->
+            <div class="theme-section">
+                <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary);">Tema Tampilan</label>
+                <button type="button" class="theme-btn" id="themeToggleBtn" onclick="toggleTheme()">
+                    Mode Gelap
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
 <script>
+    // ==========================================
+    // CONFIGURASI AKUN ANDA 
+    // ==========================================
+    const GH_USER = "adolb";
+    const GH_REPO = "wa";
+    const GH_TOKEN = "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"; 
+    
     let allChatsData = {};
     window.activeContactName = null;
-    
-    // Variabel Navigasi Pencarian Chat
     let currentMatchIndex = -1;
     let matchingElements = [];
+    let extractedParsedChats = null;
 
     // =========================================================================
-    // FUNGSI INITVIEWER MILIK ANDA (100% TIDAK DIUBAH)
+    // FITUR MODE GELAP / TERANG (TEMA) - TANPA IKON
+    // =========================================================================
+    function toggleTheme() {
+        document.body.classList.toggle('dark-mode');
+        const isDark = document.body.classList.contains('dark-mode');
+        localStorage.setItem('app-theme', isDark ? 'dark' : 'light');
+        updateThemeBtnText();
+    }
+
+    function updateThemeBtnText() {
+        const isDark = document.body.classList.contains('dark-mode');
+        const themeBtn = document.getElementById('themeToggleBtn');
+        if (themeBtn) {
+            themeBtn.innerHTML = isDark ? 'Mode Terang' : 'Mode Gelap';
+        }
+    }
+
+    // Memuat preferensi tema yang tersimpan
+    const savedTheme = localStorage.getItem('app-theme');
+    if (savedTheme === 'dark') {
+        document.body.classList.add('dark-mode');
+    }
+    updateThemeBtnText();
+
+    // =========================================================================
+    // LOGIKA MODAL & EKSTRAK ZIP 
+    // =========================================================================
+    const modal = document.getElementById('uploadModal');
+    const btnOpen = document.getElementById('openUploadModalBtn');
+    const btnClose = document.getElementById('closeUploadModalBtn');
+    
+    btnOpen.addEventListener('click', () => { modal.classList.add('show'); });
+    btnClose.addEventListener('click', () => { modal.classList.remove('show'); });
+    window.addEventListener('click', (e) => { if (e.target === modal) modal.classList.remove('show'); });
+
+    document.getElementById('zipFileInput').addEventListener('change', async function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        try {
+            const zip = new JSZip();
+            const zipContent = await zip.loadAsync(file);
+            let txtText = "";
+            let defaultName = file.name.replace('.zip', '').replace('WhatsApp Chat dengan ', '');
+
+            for (let filename of Object.keys(zipContent.files)) {
+                if (filename.endsWith('.txt') && !filename.startsWith('__MACOSX') && !filename.includes('/_')) {
+                    txtText = await zipContent.files[filename].async('string');
+                    defaultName = filename.replace('.txt', '').replace('WhatsApp Chat dengan ', '');
+                    break;
+                }
+            }
+
+            if (!txtText) {
+                alert("File .txt chat WhatsApp tidak ditemukan di dalam ZIP!");
+                return;
+            }
+
+            extractedParsedChats = parseWhatsAppTXT(txtText);
+            
+            document.getElementById('renameInput').value = defaultName;
+            document.getElementById('uploadFormArea').style.display = 'flex';
+        } catch (err) {
+            alert("Gagal membaca file ZIP.");
+        }
+    });
+
+    function parseWhatsAppTXT(text) {
+        const lines = text.split(/\r?\n/);
+        const chats = [];
+        const regex = /^[\u200E\u200F]?[\[\(]?(\d{1,2}[\/.-]\d{1,2}[\/.-]\d{2,4}),?\s+(\d{1,2}[:.]\d{2}(?:[:.]\d{2})?(?:\s+[AP]M)?)[\\]?\]?\s*[-–]?\s*([^:]+):\s+(.*)$/i;
+
+        let currentMessage = null;
+        lines.forEach(line => {
+            const match = line.match(regex);
+            if (match) {
+                if (currentMessage) chats.push(currentMessage);
+                currentMessage = {
+                    date: match[1].trim(),
+                    time: match[2].trim(),
+                    sender: match[3].trim(),
+                    message: match[4].trim()
+                };
+            } else {
+                if (currentMessage) {
+                    currentMessage.message += "\n" + line.trim();
+                }
+            }
+        });
+        if (currentMessage) chats.push(currentMessage);
+        return chats;
+    }
+
+    async function processAndUploadZIP() {
+        let newName = document.getElementById('renameInput').value.trim();
+
+        if (!newName) {
+            alert("Harap tentukan nama kontak/file terlebih dahulu!");
+            return;
+        }
+        if (!extractedParsedChats) {
+            alert("Belum ada data chat yang diproses.");
+            return;
+        }
+
+        const jsonStringData = JSON.stringify({ chats: extractedParsedChats }, null, 2);
+        const fileName = newName.toLowerCase().replace(/\s+/g, '_') + '.json';
+        const base64Content = btoa(unescape(encodeURIComponent(jsonStringData)));
+        const url = `https://api.github.com/repos/${GH_USER}/${GH_REPO}/contents/${fileName}`;
+
+        try {
+            document.querySelector('#uploadFormArea .upload-btn').textContent = "Mengunggah...";
+
+            const response = await fetch(url, {
+                method: "PUT",
+                headers: {
+                    "Authorization": `Bearer ${GH_TOKEN}`,
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    message: `Upload chat instan ${fileName} via ZIP`,
+                    content: base64Content
+                })
+            });
+
+            if (response.ok) {
+                alert("Berhasil! Chat telah di-upload.");
+                
+                // --- Update UI Tanpa Refresh Halaman ---
+                const finalContactName = newName.trim();
+                
+                // 1. Masukkan data ke memori agar langsung bisa dibaca
+                allChatsData[finalContactName] = extractedParsedChats;
+                
+                // 2. Tambahkan kontak baru ke antarmuka (Sidebar)
+                addContactItem(finalContactName, extractedParsedChats.length);
+                
+                // 3. Reset form upload dan sembunyikan area form
+                document.getElementById('renameInput').value = '';
+                document.getElementById('zipFileInput').value = '';
+                extractedParsedChats = null;
+                document.getElementById('uploadFormArea').style.display = 'none';
+                
+                // 4. Kembalikan tulisan tombol
+                document.querySelector('#uploadFormArea .upload-btn').textContent = "Ubah ke JSON & Upload";
+                
+                // 5. Tutup Modal/Menu secara otomatis kembali ke antarmuka awal
+                document.getElementById('uploadModal').classList.remove('show');
+
+            } else {
+                const errData = await response.json();
+                alert("Gagal upload: " + (errData.message || "Kesalahan tidak dikenal"));
+                document.querySelector('#uploadFormArea .upload-btn').textContent = "Ubah ke JSON & Upload";
+            }
+        } catch (error) {
+            alert("Terjadi kesalahan jaringan saat mengunggah.");
+            document.querySelector('#uploadFormArea .upload-btn').textContent = "Ubah ke JSON & Upload";
+        }
+    }
+
+    // =========================================================================
+    // FUNGSI MEMUAT DATA REPOSITORY
     // =========================================================================
     async function initViewer() {
         const contactListEl = document.getElementById('contactList');
         
         try {
-            const pathParts = window.location.hostname.split('.');
-            let owner = pathParts[0];
-            let repoPath = window.location.pathname.split('/')[1];
-            
-            const apiUrl = `https://api.github.com/repos/${owner}/${repoPath}/contents/`;
+            const apiUrl = `https://api.github.com/repos/${GH_USER}/${GH_REPO}/contents/`;
             const response = await fetch(apiUrl);
             if (!response.ok) throw new Error("Gagal mengambil daftar file");
             
@@ -183,7 +498,7 @@
             contactListEl.innerHTML = "";
 
             if (jsonFiles.length === 0) {
-                contactListEl.innerHTML = "<div style='padding:20px; text-align:center; color:#667781; font-size:13px;'>Tidak ada file JSON ditemukan di repository.</div>";
+                contactListEl.innerHTML = "<div style='padding:20px; text-align:center; color:var(--text-secondary); font-size:13px;'>Tidak ada file JSON ditemukan di repository.</div>";
                 return;
             }
 
@@ -205,14 +520,11 @@
             contactListEl.innerHTML = "<div style='padding:20px; text-align:center; color:red; font-size:13px;'>Gagal memuat data repository.</div>";
         }
     }
-    // =========================================================================
 
-    // Menampilkan Kontak di Sidebar
     function addContactItem(name, totalMsg) {
         const contactListEl = document.getElementById('contactList');
         const item = document.createElement('div');
         item.className = 'contact-item';
-        
         item.innerHTML = `
             <div style="flex:1; overflow:hidden;">
                 <div class="contact-name">${name}</div>
@@ -221,7 +533,6 @@
             <button class="edit-btn">Edit</button>
         `;
 
-        // Fitur Edit Nama Kontak
         const editBtn = item.querySelector('.edit-btn');
         editBtn.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -233,7 +544,6 @@
                 const trimmed = newName.trim();
                 allChatsData[trimmed] = allChatsData[currentName];
                 delete allChatsData[currentName];
-                
                 nameEl.innerText = trimmed;
                 name = trimmed;
                 
@@ -244,7 +554,6 @@
             }
         });
 
-        // Event Klik Buka Chat
         item.addEventListener('click', () => {
             document.querySelectorAll('.contact-item').forEach(el => el.classList.remove('active'));
             item.classList.add('active');
@@ -260,14 +569,13 @@
         contactListEl.appendChild(item);
     }
 
-    // Tombol kembali di HP
     document.getElementById('backBtn').addEventListener('click', () => {
         document.getElementById('sidebarPanel').classList.remove('hidden-mobile');
         document.getElementById('chatAreaPanel').classList.remove('active-mobile');
     });
 
     // =========================================================================
-    // FITUR PENCARIAN GLOBAL DI SELURUH FILE JSON
+    // FITUR PENCARIAN (GLOBAL & CHAT)
     // =========================================================================
     function handleGlobalSearch() {
         const keyword = document.getElementById('globalSearch').value.trim().toLowerCase();
@@ -280,8 +588,6 @@
         }
 
         let resultsCount = 0;
-        
-        // Iterasi ke SEMUA file JSON (Kontak & Chat)
         for (let [contactName, chats] of Object.entries(allChatsData)) {
             if (!Array.isArray(chats)) continue;
 
@@ -316,7 +622,7 @@
         if (resultsCount > 0) {
             dropdown.style.display = 'block';
         } else {
-            dropdown.innerHTML = `<div style="padding:12px; font-size:12px; color:#667781; text-align:center;">Tidak ada pesan yang cocok.</div>`;
+            dropdown.innerHTML = `<div style="padding:12px; font-size:12px; color:var(--text-secondary); text-align:center;">Tidak ada pesan yang cocok.</div>`;
             dropdown.style.display = 'block';
         }
     }
@@ -324,7 +630,6 @@
     function openChatAndJumpToMessage(contactName, targetMsgIndex, keyword) {
         window.activeContactName = contactName;
 
-        // Tandai aktif pada daftar kontak di sidebar
         document.querySelectorAll('.contact-item').forEach(item => {
             const nameEl = item.querySelector('.contact-name');
             if (nameEl && nameEl.innerText.toLowerCase() === contactName.toLowerCase()) {
@@ -333,17 +638,12 @@
             }
         });
 
-        // Set kata kunci ke kolom pencarian chat
         document.getElementById('inChatSearch').value = keyword;
-        
-        // Render percakapan
         renderChat(contactName, allChatsData[contactName]);
 
-        // Pindah ke layar chat
         document.getElementById('sidebarPanel').classList.add('hidden-mobile');
         document.getElementById('chatAreaPanel').classList.add('active-mobile');
 
-        // Beralih ke pesan spesifik yang dicari
         const targetBubble = document.querySelector(`.message-bubble[data-msg-index="${targetMsgIndex}"]`);
         if (targetBubble) {
             const matchIndex = matchingElements.indexOf(targetBubble);
@@ -355,9 +655,6 @@
         }
     }
 
-    // =========================================================================
-    // FITUR RENDER CHAT & NAVIGASI SCROLL PENCARIAN (1, 2, 3...)
-    // =========================================================================
     function renderChat(contactName, chats) {
         const headerTitleEl = document.getElementById('chatHeaderTitle');
         const messagesEl = document.getElementById('chatMessages');
@@ -375,7 +672,7 @@
             const bubble = document.createElement('div');
             const sender = chat.sender || "Sistem";
             
-            // ATURAN MUTLAK: Pengirim 'w' berada di KANAN (Outgoing)
+            // Aturan Mutlak: Pengirim "w" selalu di sebelah kanan (Outgoing)
             const isMe = sender.toLowerCase() === "w";
             bubble.className = `message-bubble ${isMe ? 'outgoing' : 'incoming'}`;
             bubble.setAttribute('data-msg-index', index);
@@ -413,7 +710,6 @@
         }
     }
 
-    // Navigasi Keyboard (Enter = Selanjutnya, Shift+Enter = Sebelumnya)
     function onInChatSearchKey(event) {
         if (event.key === "Enter") {
             if (event.shiftKey) {
@@ -428,36 +724,30 @@
         }
     }
 
-    // Tombol Navigasi ▲ dan ▼
     function navigateSearch(direction) {
         if (matchingElements.length === 0) return;
         
         currentMatchIndex += direction;
         
         if (currentMatchIndex >= matchingElements.length) {
-            currentMatchIndex = 0; // Loop kembali ke awal
+            currentMatchIndex = 0;
         } else if (currentMatchIndex < 0) {
-            currentMatchIndex = matchingElements.length - 1; // Loop ke akhir
+            currentMatchIndex = matchingElements.length - 1;
         }
 
         jumpToMatch(currentMatchIndex);
     }
 
-    // Bergulir (Scroll) Otomatis ke Hasil Pencarian Spesifik
     function jumpToMatch(index) {
         if (index < 0 || index >= matchingElements.length) return;
 
         currentMatchIndex = index;
-
-        // Bersihkan highlight aktif sebelumnya
         document.querySelectorAll('.highlight.active-match').forEach(el => el.classList.remove('active-match'));
 
         const targetBubble = matchingElements[index];
         const highlightSpans = targetBubble.querySelectorAll('.highlight');
         
         highlightSpans.forEach(span => span.classList.add('active-match'));
-
-        // Fitur Scroll Bergulir Halus ke Pesan
         targetBubble.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
         updateSearchCounter();
@@ -481,7 +771,6 @@
         return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     }
 
-    // Sembunyikan dropdown jika mengeklik di luar area
     document.addEventListener('click', (e) => {
         if (!e.target.closest('.global-search-box')) {
             document.getElementById('globalDropdown').style.display = 'none';

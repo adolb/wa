@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -45,14 +46,21 @@
         .sidebar-header { padding: 16px; background: #f0f2f5; border-bottom: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 8px; }
         .sidebar-header h2 { font-size: 16px; color: var(--text-primary); }
         
-        .settings-box { background: #ffffff; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 4px; font-size: 12px; }
-        .settings-box input, .settings-box select { width: 100%; padding: 5px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 12px; }
+        /* CSS Pencarian Global & Dropdown */
+        .search-box-container { position: relative; width: 100%; }
+        .search-input { width: 100%; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; outline: none; }
+        .dropdown { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid var(--border-color); border-radius: 0 0 6px 6px; max-height: 150px; overflow-y: auto; display: none; z-index: 10; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .dropdown-item { padding: 10px; cursor: pointer; border-bottom: 1px solid #eee; font-size: 13px; }
+        .dropdown-item:hover { background: #f0f2f5; }
 
         .contact-list { flex: 1; overflow-y: auto; }
-        .contact-item { padding: 14px 16px; border-bottom: 1px solid var(--border-color); cursor: pointer; transition: background 0.2s; }
+        .contact-item { padding: 14px 16px; border-bottom: 1px solid var(--border-color); cursor: pointer; transition: background 0.2s; display: flex; justify-content: space-between; align-items: center; }
         .contact-item:hover, .contact-item.active { background: #f0f2f5; }
         .contact-name { font-weight: 600; font-size: 14px; text-transform: uppercase; }
-        .contact-meta { font-size: 11px; color: var(--text-secondary); }
+        .contact-meta { font-size: 11px; color: var(--text-secondary); margin-top: 4px; }
+        
+        /* CSS Tombol Edit */
+        .edit-btn { background: #007bff; color: white; border: none; padding: 4px 10px; border-radius: 4px; font-size: 11px; cursor: pointer; }
 
         /* Area Chat Full Screen */
         .chat-area {
@@ -64,7 +72,8 @@
         }
         .chat-area.active-mobile { transform: translateX(0); }
 
-        .chat-header { padding: 12px 16px; background: #f0f2f5; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 12px; font-weight: 600; font-size: 15px; }
+        .chat-header { padding: 12px 16px; background: #f0f2f5; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; gap: 12px; font-weight: 600; font-size: 15px; }
+        .header-left { display: flex; align-items: center; gap: 10px; }
         .back-btn { background: none; border: none; font-size: 20px; cursor: pointer; color: #005c4b; display: flex; align-items: center; }
         @media (min-width: 768px) { .back-btn { display: none; } }
 
@@ -81,6 +90,9 @@
         .message-sender { font-size: 11px; font-weight: bold; color: #005c4b; margin-bottom: 2px; }
         .message-time { font-size: 9px; color: var(--text-secondary); text-align: right; margin-top: 3px; }
         .empty-state { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; color: var(--text-secondary); text-align: center; padding: 20px; }
+        
+        /* CSS Highlight Pencarian In-Chat */
+        .highlight { font-weight: bold; color: #d9534f; background-color: yellow; }
     </style>
 </head>
 <body>
@@ -90,14 +102,10 @@
     <div class="sidebar" id="sidebarPanel">
         <div class="sidebar-header">
             <h2>Arsip Chat WhatsApp</h2>
-            <div class="settings-box">
-                <label>Nama Anda di WhatsApp:</label>
-                <input type="text" id="myNameInput" placeholder="Ketik nama persis seperti di WA">
-                <label>Posisi Chat Saya:</label>
-                <select id="myPositionSelect">
-                    <option value="right">Saya di Kanan (Standar WA)</option>
-                    <option value="left">Saya di Kiri</option>
-                </select>
+            <!-- Bagian Setting Dihapus, Diganti Pencarian Global -->
+            <div class="search-box-container">
+                <input type="text" id="globalSearch" class="search-input" placeholder="Cari kata di semua obrolan..." onkeyup="handleGlobalSearch()">
+                <div id="searchDropdown" class="dropdown"></div>
             </div>
         </div>
         <div class="contact-list" id="contactList">
@@ -108,8 +116,14 @@
     <!-- Area Chat Full Screen -->
     <div class="chat-area" id="chatAreaPanel">
         <div class="chat-header">
-            <button class="back-btn" id="backBtn">&#8592;</button>
-            <span id="chatHeaderTitle">Pilih kontak</span>
+            <div class="header-left">
+                <button class="back-btn" id="backBtn">&#8592;</button>
+                <span id="chatHeaderTitle">Pilih kontak</span>
+            </div>
+            <!-- Pencarian di dalam Chat -->
+            <div style="max-width: 180px;">
+                <input type="text" id="inChatSearch" class="search-input" placeholder="Cari di chat..." onkeyup="renderCurrentChat()">
+            </div>
         </div>
         <div class="chat-messages" id="chatMessages">
             <div class="empty-state">
@@ -122,7 +136,11 @@
 
 <script>
     let allChatsData = {};
+    window.activeContactName = null; // Menyimpan status kontak yang sedang dibuka
 
+    // =========================================================================
+    // FUNGSI INITVIEWER MILIK ANDA (100% TIDAK DIUBAH SAMA SEKALI)
+    // =========================================================================
     async function initViewer() {
         const contactListEl = document.getElementById('contactList');
         
@@ -163,24 +181,61 @@
             contactListEl.innerHTML = "<div style='padding:20px; text-align:center; color:red; font-size:13px;'>Gagal memuat data repository.</div>";
         }
     }
+    // =========================================================================
 
+    // Fungsi Render Daftar Kontak (Diubah untuk menambahkan Tombol Edit)
     function addContactItem(name, totalMsg) {
         const contactListEl = document.getElementById('contactList');
         const item = document.createElement('div');
         item.className = 'contact-item';
+        
         item.innerHTML = `
-            <div class="contact-name">${name}</div>
-            <div class="contact-meta">${totalMsg} pesan</div>
+            <div style="flex:1;">
+                <div class="contact-name">${name}</div>
+                <div class="contact-meta">${totalMsg} pesan</div>
+            </div>
+            <button class="edit-btn">Edit</button>
         `;
+
+        // Fitur Mengedit Nama Kontak
+        const editBtn = item.querySelector('.edit-btn');
+        editBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); // Mencegah klik masuk ke chat
+            const nameEl = item.querySelector('.contact-name');
+            const currentName = nameEl.innerText;
+            const newName = prompt("Masukkan nama baru untuk kontak ini:", currentName);
+            
+            if (newName && newName.trim() !== "" && newName !== currentName) {
+                const trimmed = newName.trim();
+                // Pindahkan data ke nama baru
+                allChatsData[trimmed] = allChatsData[currentName];
+                delete allChatsData[currentName];
+                
+                nameEl.innerText = trimmed;
+                name = trimmed; // Update nama lokal di closure
+                
+                // Jika sedang dibuka, ubah juga headernya
+                if (window.activeContactName === currentName) {
+                    window.activeContactName = trimmed;
+                    document.getElementById('chatHeaderTitle').textContent = trimmed.toUpperCase();
+                }
+            }
+        });
+
+        // Buka Chat
         item.addEventListener('click', () => {
             document.querySelectorAll('.contact-item').forEach(el => el.classList.remove('active'));
             item.classList.add('active');
+            
+            window.activeContactName = name;
+            document.getElementById('inChatSearch').value = ''; // Reset pencarian dalam chat
             renderChat(name, allChatsData[name]);
 
             // Animasi pindah ke layar chat full screen di HP
             document.getElementById('sidebarPanel').classList.add('hidden-mobile');
             document.getElementById('chatAreaPanel').classList.add('active-mobile');
         });
+        
         contactListEl.appendChild(item);
     }
 
@@ -190,11 +245,18 @@
         document.getElementById('chatAreaPanel').classList.remove('active-mobile');
     });
 
+    // Pemicu ulang render saat mencari di dalam chat
+    function renderCurrentChat() {
+        if (window.activeContactName && allChatsData[window.activeContactName]) {
+            renderChat(window.activeContactName, allChatsData[window.activeContactName]);
+        }
+    }
+
+    // Fungsi Render Chat (Diubah dengan aturan mutlak 'w' dan highlight)
     function renderChat(contactName, chats) {
         const headerTitleEl = document.getElementById('chatHeaderTitle');
         const messagesEl = document.getElementById('chatMessages');
-        const myName = document.getElementById('myNameInput').value.trim().toLowerCase();
-        const myPosition = document.getElementById('myPositionSelect').value;
+        const keyword = document.getElementById('inChatSearch').value.trim().toLowerCase();
 
         headerTitleEl.textContent = contactName.toUpperCase();
         messagesEl.innerHTML = "";
@@ -204,22 +266,107 @@
         chats.forEach(chat => {
             const bubble = document.createElement('div');
             const sender = chat.sender || "Sistem";
-            const isMe = myName !== "" && sender.toLowerCase() === myName;
             
-            if (myPosition === 'right') {
-                bubble.className = `message-bubble ${isMe ? 'outgoing' : 'incoming'}`;
-            } else {
-                bubble.className = `message-bubble ${isMe ? 'incoming' : 'outgoing'}`;
+            // ATURAN MUTLAK: Jika pengirim "w", otomatis di Kanan
+            const isMe = sender.toLowerCase() === "w";
+            bubble.className = `message-bubble ${isMe ? 'outgoing' : 'incoming'}`;
+
+            // Handle teks dan highlight pencarian
+            let displayMessage = escapeHTML(chat.message || "");
+            if (keyword !== "") {
+                const regex = new RegExp(`(${keyword})`, "gi");
+                displayMessage = displayMessage.replace(regex, `<b class="highlight">$1</b>`);
             }
 
             bubble.innerHTML = `
                 <div class="message-sender">${escapeHTML(sender)}</div>
-                <div>${escapeHTML(chat.message || "")}</div>
+                <div>${displayMessage}</div>
                 ${chat.date && chat.time ? `<div class="message-time">${escapeHTML(chat.date)} ${escapeHTML(chat.time)}</div>` : ''}
             `;
             messagesEl.appendChild(bubble);
         });
         messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+
+    // =========================================================================
+    // FITUR PENCARIAN GLOBAL & DROPDOWN BOLD
+    // =========================================================================
+    function handleGlobalSearch() {
+        const keyword = document.getElementById('globalSearch').value.toLowerCase();
+        const dropdown = document.getElementById('searchDropdown');
+        dropdown.innerHTML = '';
+
+        if (keyword.length === 0) {
+            dropdown.style.display = 'none';
+            return;
+        }
+
+        let matchedWords = new Set();
+        Object.values(allChatsData).forEach(chats => {
+            if (Array.isArray(chats)) {
+                chats.forEach(chat => {
+                    if (chat.message) {
+                        const words = chat.message.split(/[^a-zA-Z0-9]/);
+                        words.forEach(word => {
+                            if (word.toLowerCase().includes(keyword)) {
+                                matchedWords.add(word);
+                            }
+                        });
+                    }
+                });
+            }
+        });
+
+        if (matchedWords.size > 0) {
+            dropdown.style.display = 'block';
+            matchedWords.forEach(word => {
+                const item = document.createElement('div');
+                item.className = 'dropdown-item';
+                
+                // Buat huruf tebal pada kata yang diketik
+                const regex = new RegExp(`(${keyword})`, "gi");
+                item.innerHTML = escapeHTML(word).replace(regex, `<b>$1</b>`);
+                
+                item.onclick = () => {
+                    document.getElementById('globalSearch').value = word;
+                    dropdown.style.display = 'none';
+                    openChatWithWord(word); 
+                };
+                dropdown.appendChild(item);
+            });
+        } else {
+            dropdown.style.display = 'none';
+        }
+    }
+
+    function openChatWithWord(word) {
+        for (let [contactName, chats] of Object.entries(allChatsData)) {
+            if (Array.isArray(chats)) {
+                for (let chat of chats) {
+                    if (chat.message && chat.message.toLowerCase().includes(word.toLowerCase())) {
+                        
+                        document.getElementById('inChatSearch').value = word;
+                        window.activeContactName = contactName;
+
+                        // Tambahkan kelas active pada kontak di sidebar secara visual
+                        const contactItems = document.querySelectorAll('.contact-item');
+                        contactItems.forEach(item => {
+                            const nameText = item.querySelector('.contact-name');
+                            if (nameText && nameText.innerText.toLowerCase() === contactName.toLowerCase()) {
+                                contactItems.forEach(el => el.classList.remove('active'));
+                                item.classList.add('active');
+                            }
+                        });
+
+                        renderChat(contactName, chats);
+
+                        document.getElementById('sidebarPanel').classList.add('hidden-mobile');
+                        document.getElementById('chatAreaPanel').classList.add('active-mobile');
+                        return;
+                    }
+                }
+            }
+        }
     }
 
     function escapeHTML(str) {

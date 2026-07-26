@@ -70,11 +70,9 @@
 
         .sidebar-header { padding: 12px 16px; background: var(--header-bg); border-bottom: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 12px; }
         
-        /* Area Header Atas (Judul + Ikon Gerigi) */
         .sidebar-header-top { display: flex; justify-content: space-between; align-items: center; }
         .sidebar-header h2 { font-size: 16px; color: var(--text-primary); margin: 0; }
         
-        /* Ikon Gerigi Elegan */
         .settings-btn {
             background: transparent; border: none; cursor: pointer; color: var(--text-secondary);
             display: flex; align-items: center; justify-content: center; padding: 6px; 
@@ -83,7 +81,6 @@
         .settings-btn:hover { background: var(--hover-bg); color: var(--text-primary); }
         .settings-btn svg { width: 22px; height: 22px; fill: currentColor; }
         
-        /* Pencarian Global Semua File JSON */
         .global-search-box { position: relative; width: 100%; }
         .search-input { width: 100%; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; outline: none; background: var(--input-bg); color: var(--text-primary); }
         .search-input:focus { border-color: var(--primary); }
@@ -163,24 +160,25 @@
             background: var(--card-bg); color: var(--text-primary); width: 90%; max-width: 400px;
             border-radius: 12px; box-shadow: 0 15px 35px rgba(0,0,0,0.3);
             border: 1px solid var(--border-color); overflow: hidden; transform: translateY(20px); transition: transform 0.3s ease;
+            max-height: 90vh; display: flex; flex-direction: column;
         }
         .modal-overlay.show .modal-content { transform: translateY(0); }
 
         .modal-header {
             padding: 16px 20px; background: var(--primary); color: white;
-            display: flex; justify-content: space-between; align-items: center;
+            display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;
         }
         .modal-header h3 { margin: 0; font-size: 16px; font-weight: 600; }
         .close-modal-btn { background: transparent; border: none; color: white; font-size: 24px; cursor: pointer; line-height: 1; }
         
-        .modal-body { padding: 20px; display: flex; flex-direction: column; gap: 15px; }
+        .modal-body { padding: 20px; display: flex; flex-direction: column; gap: 15px; overflow-y: auto; }
         .input-group { display: flex; flex-direction: column; gap: 6px; }
         .input-group label { font-size: 12px; font-weight: 600; color: var(--text-secondary); }
-        .input-group input[type="text"] {
+        .input-group input[type="text"], .input-group input[type="password"] {
             padding: 10px; border: 1px solid var(--border-color); border-radius: 6px;
             font-size: 13px; outline: none; background: var(--input-bg); color: var(--text-primary); transition: border 0.2s;
         }
-        .input-group input[type="text"]:focus { border-color: var(--primary); }
+        .input-group input[type="text"]:focus, .input-group input[type="password"]:focus { border-color: var(--primary); }
         
         .upload-section { background: var(--upload-bg); border: 2px dashed var(--primary); padding: 15px; border-radius: 8px; text-align: center; }
         .upload-section input[type="file"] { display: none; }
@@ -224,7 +222,6 @@
         <div class="sidebar-header">
             <div class="sidebar-header-top">
                 <h2>Arsip Chat WhatsApp</h2>
-                <!-- Tombol Gerigi untuk Buka Modal Pengaturan -->
                 <button class="settings-btn" id="openUploadModalBtn" title="Pengaturan & Upload">
                     <svg viewBox="0 0 24 24">
                         <path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.06-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.73,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.06,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.43-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.49-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/>
@@ -232,7 +229,6 @@
                 </button>
             </div>
             
-            <!-- Pencarian Global Semua File JSON -->
             <div class="global-search-box">
                 <input type="text" id="globalSearch" class="search-input" placeholder="Cari di semua file JSON..." onkeyup="handleGlobalSearch()">
                 <div id="globalDropdown" class="global-dropdown"></div>
@@ -254,8 +250,9 @@
             <div class="chat-search-container">
                 <input type="text" id="inChatSearch" class="chat-search-input" placeholder="Cari..." onkeyup="onInChatSearchKey(event)">
                 <span id="searchCounter" class="search-counter">0/0</span>
-                <button class="search-nav-btn" onclick="navigateSearch(-1)" title="Sebelumnya (Shift+Enter)">▲</button>
-                <button class="search-nav-btn" onclick="navigateSearch(1)" title="Berikutnya (Enter)">▼</button>
+                <!-- Tombol atas sekarang mundur indeks (naik ke atas) -->
+                <button class="search-nav-btn" onclick="navigateSearch(-1)" title="Cari ke Atas (Enter)">▲</button>
+                <button class="search-nav-btn" onclick="navigateSearch(1)" title="Cari ke Bawah (Shift+Enter)">▼</button>
             </div>
         </div>
         <div class="chat-messages" id="chatMessages">
@@ -278,6 +275,13 @@
         </div>
         <div class="modal-body">
             
+            <!-- ISIAN TOKEN DI ATAS UPLOAD -->
+            <div class="input-group">
+                <label>GitHub Personal Access Token (Token Anda)</label>
+                <input type="password" id="tokenInput" placeholder="Tempel token di sini (ghp_...)" onchange="saveTokenInput()">
+                <span style="font-size:10px; color:var(--text-secondary);">Token aman disimpan di browser perangkat ini agar tidak terblokir GitHub.</span>
+            </div>
+
             <!-- Fungsi Upload ZIP -->
             <div class="upload-section">
                 <p style="font-size: 12px; color:var(--text-secondary); margin-bottom:10px;">Pilih file arsip .ZIP ekspor dari WhatsApp Anda.</p>
@@ -285,7 +289,7 @@
                 <button type="button" class="upload-btn" onclick="document.getElementById('zipFileInput').click()">Pilih File ZIP</button>
             </div>
 
-            <!-- Form Edit Nama & Tombol Kirim (Muncul setelah ZIP dipilih) -->
+            <!-- Form Edit Nama & Tombol Kirim -->
             <div id="uploadFormArea">
                 <div class="input-group">
                     <label>Rename Nama Kontak (Otomatis diekstrak)</label>
@@ -294,7 +298,7 @@
                 <button type="button" class="upload-btn" onclick="processAndUploadZIP()">Ubah ke JSON & Upload</button>
             </div>
 
-            <!-- Fungsi Ganti Tema (Tanpa Ikon Matahari/Bulan) -->
+            <!-- Fungsi Ganti Tema -->
             <div class="theme-section">
                 <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary);">Tema Tampilan</label>
                 <button type="button" class="theme-btn" id="themeToggleBtn" onclick="toggleTheme()">
@@ -312,7 +316,27 @@
     // ==========================================
     const GH_USER = "adolb";
     const GH_REPO = "wa";
-    const GH_TOKEN = "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"; 
+    
+    // Token diambil dari memori browser (localStorage) agar aman dari Secret Scanning GitHub
+    function getStoredToken() {
+        return localStorage.getItem('my_gh_token') || "";
+    }
+
+    function saveTokenInput() {
+        const val = document.getElementById('tokenInput').value.trim();
+        if (val) {
+            localStorage.setItem('my_gh_token', val);
+            alert("Token berhasil disimpan di perangkat ini!");
+        }
+    }
+
+    // Saat modal dibuka, muat token yang tersimpan ke input password
+    document.addEventListener("DOMContentLoaded", () => {
+        const savedToken = getStoredToken();
+        if (savedToken) {
+            document.getElementById('tokenInput').value = savedToken;
+        }
+    });
     
     let allChatsData = {};
     window.activeContactName = null;
@@ -321,7 +345,7 @@
     let extractedParsedChats = null;
 
     // =========================================================================
-    // FITUR MODE GELAP / TERANG (TEMA) - TANPA IKON
+    // FITUR MODE GELAP / TERANG (TEMA)
     // =========================================================================
     function toggleTheme() {
         document.body.classList.toggle('dark-mode');
@@ -338,7 +362,6 @@
         }
     }
 
-    // Memuat preferensi tema yang tersimpan
     const savedTheme = localStorage.getItem('app-theme');
     if (savedTheme === 'dark') {
         document.body.classList.add('dark-mode');
@@ -352,7 +375,10 @@
     const btnOpen = document.getElementById('openUploadModalBtn');
     const btnClose = document.getElementById('closeUploadModalBtn');
     
-    btnOpen.addEventListener('click', () => { modal.classList.add('show'); });
+    btnOpen.addEventListener('click', () => { 
+        document.getElementById('tokenInput').value = getStoredToken();
+        modal.classList.add('show'); 
+    });
     btnClose.addEventListener('click', () => { modal.classList.remove('show'); });
     window.addEventListener('click', (e) => { if (e.target === modal) modal.classList.remove('show'); });
 
@@ -416,6 +442,17 @@
 
     async function processAndUploadZIP() {
         let newName = document.getElementById('renameInput').value.trim();
+        let token = getStoredToken();
+
+        if (!token) {
+            token = document.getElementById('tokenInput').value.trim();
+            if (token) localStorage.setItem('my_gh_token', token);
+        }
+
+        if (!token) {
+            alert("Harap masukkan GitHub Token Anda terlebih dahulu pada kolom yang disediakan di atas!");
+            return;
+        }
 
         if (!newName) {
             alert("Harap tentukan nama kontak/file terlebih dahulu!");
@@ -437,7 +474,7 @@
             const response = await fetch(url, {
                 method: "PUT",
                 headers: {
-                    "Authorization": `Bearer ${GH_TOKEN}`,
+                    "Authorization": `Bearer ${token}`,
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
@@ -449,30 +486,25 @@
             if (response.ok) {
                 alert("Berhasil! Chat telah di-upload.");
                 
-                // --- Update UI Tanpa Refresh Halaman ---
                 const finalContactName = newName.trim();
-                
-                // 1. Masukkan data ke memori agar langsung bisa dibaca
                 allChatsData[finalContactName] = extractedParsedChats;
-                
-                // 2. Tambahkan kontak baru ke antarmuka (Sidebar)
                 addContactItem(finalContactName, extractedParsedChats.length);
                 
-                // 3. Reset form upload dan sembunyikan area form
                 document.getElementById('renameInput').value = '';
                 document.getElementById('zipFileInput').value = '';
                 extractedParsedChats = null;
                 document.getElementById('uploadFormArea').style.display = 'none';
-                
-                // 4. Kembalikan tulisan tombol
                 document.querySelector('#uploadFormArea .upload-btn').textContent = "Ubah ke JSON & Upload";
-                
-                // 5. Tutup Modal/Menu secara otomatis kembali ke antarmuka awal
                 document.getElementById('uploadModal').classList.remove('show');
 
             } else {
                 const errData = await response.json();
-                alert("Gagal upload: " + (errData.message || "Kesalahan tidak dikenal"));
+                if (response.status === 401) {
+                    localStorage.removeItem('my_gh_token');
+                    alert("Token tidak valid / expired. Periksa kembali token Anda.");
+                } else {
+                    alert("Gagal upload: " + (errData.message || "Kesalahan tidak dikenal"));
+                }
                 document.querySelector('#uploadFormArea .upload-btn').textContent = "Ubah ke JSON & Upload";
             }
         } catch (error) {
@@ -575,7 +607,7 @@
     });
 
     // =========================================================================
-    // FITUR PENCARIAN (GLOBAL & CHAT)
+    // FITUR PENCARIAN GLOBAL
     // =========================================================================
     function handleGlobalSearch() {
         const keyword = document.getElementById('globalSearch').value.trim().toLowerCase();
@@ -587,7 +619,8 @@
             return;
         }
 
-        let resultsCount = 0;
+        let tempResults = [];
+
         for (let [contactName, chats] of Object.entries(allChatsData)) {
             if (!Array.isArray(chats)) continue;
 
@@ -596,30 +629,38 @@
                 const senderText = (chat.sender || '').toLowerCase();
 
                 if (msgText.includes(keyword) || senderText.includes(keyword)) {
-                    resultsCount++;
-                    const item = document.createElement('div');
-                    item.className = 'global-result-item';
-
-                    const regex = new RegExp(`(${escapeRegExp(keyword)})`, "gi");
-                    const highlightedMsg = escapeHTML(chat.message || '').replace(regex, `<b>$1</b>`);
-
-                    item.innerHTML = `
-                        <div class="global-result-contact">${escapeHTML(contactName)}</div>
-                        <div class="global-result-text"><strong>${escapeHTML(chat.sender || 'Sistem')}:</strong> ${highlightedMsg}</div>
-                        <div class="global-result-meta">${escapeHTML(chat.date || '')} ${escapeHTML(chat.time || '')}</div>
-                    `;
-
-                    item.onclick = () => {
-                        dropdown.style.display = 'none';
-                        openChatAndJumpToMessage(contactName, msgIndex, keyword);
-                    };
-
-                    dropdown.appendChild(item);
+                    tempResults.push({
+                        contactName,
+                        chat,
+                        msgIndex
+                    });
                 }
             });
         }
 
-        if (resultsCount > 0) {
+        tempResults.reverse();
+
+        if (tempResults.length > 0) {
+            tempResults.forEach(itemData => {
+                const item = document.createElement('div');
+                item.className = 'global-result-item';
+
+                const regex = new RegExp(`(${escapeRegExp(keyword)})`, "gi");
+                const highlightedMsg = escapeHTML(itemData.chat.message || '').replace(regex, `<b>$1</b>`);
+
+                item.innerHTML = `
+                    <div class="global-result-contact">${escapeHTML(itemData.contactName)}</div>
+                    <div class="global-result-text"><strong>${escapeHTML(itemData.chat.sender || 'Sistem')}:</strong> ${highlightedMsg}</div>
+                    <div class="global-result-meta">${escapeHTML(itemData.chat.date || '')} ${escapeHTML(itemData.chat.time || '')}</div>
+                `;
+
+                item.onclick = () => {
+                    dropdown.style.display = 'none';
+                    openChatAndJumpToMessage(itemData.contactName, itemData.msgIndex, keyword);
+                };
+
+                dropdown.appendChild(item);
+            });
             dropdown.style.display = 'block';
         } else {
             dropdown.innerHTML = `<div style="padding:12px; font-size:12px; color:var(--text-secondary); text-align:center;">Tidak ada pesan yang cocok.</div>`;
@@ -655,6 +696,9 @@
         }
     }
 
+    // =========================================================================
+    // FITUR PENCARIAN DI DALAM CHAT (IN-CHAT SEARCH)
+    // =========================================================================
     function renderChat(contactName, chats) {
         const headerTitleEl = document.getElementById('chatHeaderTitle');
         const messagesEl = document.getElementById('chatMessages');
@@ -672,7 +716,6 @@
             const bubble = document.createElement('div');
             const sender = chat.sender || "Sistem";
             
-            // Aturan Mutlak: Pengirim "w" selalu di sebelah kanan (Outgoing)
             const isMe = sender.toLowerCase() === "w";
             bubble.className = `message-bubble ${isMe ? 'outgoing' : 'incoming'}`;
             bubble.setAttribute('data-msg-index', index);
@@ -704,7 +747,8 @@
         updateSearchCounter();
 
         if (matchingElements.length > 0) {
-            jumpToMatch(0);
+            // Kita MELOMPAT LANGSUNG KE ELEMEN TERAKHIR (index paling besar/paling baru)
+            jumpToMatch(matchingElements.length - 1);
         } else {
             messagesEl.scrollTop = messagesEl.scrollHeight;
         }
@@ -712,10 +756,12 @@
 
     function onInChatSearchKey(event) {
         if (event.key === "Enter") {
+            // Karena kita mulai dari paling bawah (terbaru), 
+            // Enter secara default akan diatur untuk mundur/naik ke atas mencari chat lama (-1)
             if (event.shiftKey) {
-                navigateSearch(-1);
+                navigateSearch(1); // Shift+Enter akan turun ke bawah
             } else {
-                navigateSearch(1);
+                navigateSearch(-1); // Enter otomatis naik (karena membaca mundur)
             }
         } else {
             if (window.activeContactName) {
@@ -730,9 +776,9 @@
         currentMatchIndex += direction;
         
         if (currentMatchIndex >= matchingElements.length) {
-            currentMatchIndex = 0;
+            currentMatchIndex = 0; // Balik ke paling lama
         } else if (currentMatchIndex < 0) {
-            currentMatchIndex = matchingElements.length - 1;
+            currentMatchIndex = matchingElements.length - 1; // Balik ke paling baru
         }
 
         jumpToMatch(currentMatchIndex);
@@ -758,6 +804,7 @@
         if (matchingElements.length === 0) {
             counterEl.textContent = "0/0";
         } else {
+            // Angka counter tetap berjalan normal dari 1 sampai n
             counterEl.textContent = `${currentMatchIndex + 1}/${matchingElements.length}`;
         }
     }

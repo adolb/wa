@@ -6,7 +6,7 @@
     <!-- Meta Viewport untuk Anti-Zoom & Memenuhi Layar Penuh (Notch) -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
-    <!-- Konfigurasi iOS App Mode (Menghilangkan UI Safari saat Add to Homescreen) -->
+    <!-- Konfigurasi iOS App Mode -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Arsip WA">
@@ -86,9 +86,9 @@
             .sidebar.hidden-mobile { transform: translateX(0); }
         }
 
-        /* Safe area inset top untuk header sidebar */
+        /* Header Sidebar */
         .sidebar-header { 
-            padding: calc(12px + env(safe-area-inset-top, 0px)) 16px 12px; 
+            padding: 16px 16px 12px 16px; 
             background: var(--header-bg); 
             border-bottom: 1px solid var(--border-color); 
             display: flex; flex-direction: column; gap: 12px; 
@@ -143,13 +143,24 @@
         }
         .chat-area.active-mobile { transform: translateX(0); }
 
-        /* Safe area inset top untuk header chat */
+        /* Header Chat */
         .chat-header { 
-            padding: calc(8px + env(safe-area-inset-top, 0px)) 12px 8px; 
+            padding: 12px 12px 8px 12px; 
             background: var(--header-bg); 
             border-bottom: 1px solid var(--border-color); 
             display: flex; align-items: center; justify-content: space-between; gap: 8px; font-weight: 600; font-size: 15px; 
         }
+
+        /* KHUSUS TAMPILAN HP (PORTRAIT / NOTCH IPHONE) */
+        @media (max-width: 767px) {
+            .sidebar-header {
+                padding-top: max(48px, env(safe-area-inset-top, 0px));
+            }
+            .chat-header {
+                padding-top: max(48px, env(safe-area-inset-top, 0px));
+            }
+        }
+
         .header-left { display: flex; align-items: center; gap: 8px; overflow: hidden; }
         .back-btn { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--primary); display: flex; align-items: center; }
         @media (min-width: 768px) { .back-btn { display: none; } }
@@ -289,7 +300,6 @@
             <div class="chat-search-container">
                 <input type="text" id="inChatSearch" class="chat-search-input" placeholder="Cari..." onkeyup="onInChatSearchKey(event)">
                 <span id="searchCounter" class="search-counter">0/0</span>
-                <!-- Tombol atas sekarang mundur indeks (naik ke atas) -->
                 <button class="search-nav-btn" onclick="navigateSearch(-1)" title="Cari ke Atas (Enter)">▲</button>
                 <button class="search-nav-btn" onclick="navigateSearch(1)" title="Cari ke Bawah (Shift+Enter)">▼</button>
             </div>
@@ -303,9 +313,7 @@
     </div>
 </div>
 
-<!-- =========================================
-     MODAL PENGATURAN & UPLOAD
-     ========================================= -->
+<!-- MODAL PENGATURAN & UPLOAD -->
 <div class="modal-overlay" id="uploadModal">
     <div class="modal-content">
         <div class="modal-header">
@@ -314,21 +322,18 @@
         </div>
         <div class="modal-body">
             
-            <!-- ISIAN TOKEN DI ATAS UPLOAD -->
             <div class="input-group">
                 <label>GitHub Personal Access Token (Token Anda)</label>
                 <input type="password" id="tokenInput" placeholder="Tempel token di sini (ghp_...)" onchange="saveTokenInput()">
                 <span style="font-size:10px; color:var(--text-secondary);">Token aman disimpan di browser perangkat ini agar tidak terblokir GitHub.</span>
             </div>
 
-            <!-- Fungsi Upload ZIP -->
             <div class="upload-section">
                 <p style="font-size: 12px; color:var(--text-secondary); margin-bottom:10px;">Pilih file arsip .ZIP ekspor dari WhatsApp Anda.</p>
                 <input type="file" id="zipFileInput" accept=".zip">
                 <button type="button" class="upload-btn" onclick="document.getElementById('zipFileInput').click()">Pilih File ZIP</button>
             </div>
 
-            <!-- Form Edit Nama & Tombol Kirim -->
             <div id="uploadFormArea">
                 <div class="input-group">
                     <label>Rename Nama Kontak (Otomatis diekstrak)</label>
@@ -337,7 +342,6 @@
                 <button type="button" class="upload-btn" onclick="processAndUploadZIP()">Ubah ke JSON & Upload</button>
             </div>
 
-            <!-- Fungsi Ganti Tema -->
             <div class="theme-section">
                 <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary);">Tema Tampilan</label>
                 <button type="button" class="theme-btn" id="themeToggleBtn" onclick="toggleTheme()">
@@ -350,13 +354,9 @@
 </div>
 
 <script>
-    // ==========================================
-    // CONFIGURASI AKUN ANDA 
-    // ==========================================
     const GH_USER = "adolb";
     const GH_REPO = "wa";
     
-    // Token diambil dari memori browser (localStorage) agar aman dari Secret Scanning GitHub
     function getStoredToken() {
         return localStorage.getItem('my_gh_token') || "";
     }
@@ -369,7 +369,6 @@
         }
     }
 
-    // Saat modal dibuka, muat token yang tersimpan ke input password
     document.addEventListener("DOMContentLoaded", () => {
         const savedToken = getStoredToken();
         if (savedToken) {
@@ -383,9 +382,6 @@
     let matchingElements = [];
     let extractedParsedChats = null;
 
-    // =========================================================================
-    // FITUR MODE GELAP / TERANG (TEMA)
-    // =========================================================================
     function toggleTheme() {
         document.body.classList.toggle('dark-mode');
         const isDark = document.body.classList.contains('dark-mode');
@@ -407,9 +403,6 @@
     }
     updateThemeBtnText();
 
-    // =========================================================================
-    // LOGIKA MODAL & EKSTRAK ZIP 
-    // =========================================================================
     const modal = document.getElementById('uploadModal');
     const btnOpen = document.getElementById('openUploadModalBtn');
     const btnClose = document.getElementById('closeUploadModalBtn');
@@ -552,9 +545,6 @@
         }
     }
 
-    // =========================================================================
-    // FUNGSI MEMUAT DATA REPOSITORY
-    // =========================================================================
     async function initViewer() {
         const contactListEl = document.getElementById('contactList');
         
@@ -645,9 +635,6 @@
         document.getElementById('chatAreaPanel').classList.remove('active-mobile');
     });
 
-    // =========================================================================
-    // FITUR PENCARIAN GLOBAL
-    // =========================================================================
     function handleGlobalSearch() {
         const keyword = document.getElementById('globalSearch').value.trim().toLowerCase();
         const dropdown = document.getElementById('globalDropdown');
@@ -735,9 +722,6 @@
         }
     }
 
-    // =========================================================================
-    // FITUR PENCARIAN DI DALAM CHAT (IN-CHAT SEARCH)
-    // =========================================================================
     function renderChat(contactName, chats) {
         const headerTitleEl = document.getElementById('chatHeaderTitle');
         const messagesEl = document.getElementById('chatMessages');
@@ -762,7 +746,6 @@
             let displayMessage = escapeHTML(chat.message || "");
             let isMatched = false;
 
-            // Pencarian baru berjalan jika karakter yang diketik >= 2
             if (keyword.length >= 2) {
                 const regex = new RegExp(`(${escapeRegExp(keyword)})`, "gi");
                 if (regex.test(displayMessage)) {
@@ -787,7 +770,6 @@
         updateSearchCounter();
 
         if (matchingElements.length > 0) {
-            // Melompat langsung ke elemen terakhir (paling baru)
             jumpToMatch(matchingElements.length - 1);
         } else {
             messagesEl.scrollTop = messagesEl.scrollHeight;
@@ -796,7 +778,6 @@
 
     function onInChatSearchKey(event) {
         if (event.key === "Enter") {
-            // Enter mundur ke atas (-1), Shift+Enter turun ke bawah (1)
             if (event.shiftKey) {
                 navigateSearch(1); 
             } else {
@@ -815,9 +796,9 @@
         currentMatchIndex += direction;
         
         if (currentMatchIndex >= matchingElements.length) {
-            currentMatchIndex = 0; // Balik ke paling lama
+            currentMatchIndex = 0;
         } else if (currentMatchIndex < 0) {
-            currentMatchIndex = matchingElements.length - 1; // Balik ke paling baru
+            currentMatchIndex = matchingElements.length - 1;
         }
 
         jumpToMatch(currentMatchIndex);

@@ -2,7 +2,15 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Meta Viewport untuk Anti-Zoom & Memenuhi Layar Penuh (Notch) -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
+    <!-- Konfigurasi iOS App Mode (Menghilangkan UI Safari saat Add to Homescreen) -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Arsip WA">
+
     <title>Arsip Chat WhatsApp</title>
     <!-- Library JSZip untuk ekstrak file ZIP -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -41,12 +49,22 @@
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
+        
+        /* Mengunci Tampilan Body Agar Tidak Bergeser/Bounce */
+        html, body {
+            overscroll-behavior-y: none;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-color); color: var(--text-primary);
-            height: 100vh; overflow: hidden; display: flex; justify-content: center; align-items: center;
+            background-color: var(--bg-color); 
+            color: var(--text-primary);
+            display: flex; justify-content: center; align-items: center;
             transition: background-color 0.3s, color 0.3s;
+            -webkit-tap-highlight-color: transparent;
         }
+
         .app-container {
             width: 100%; max-width: 600px; height: 100vh;
             background: var(--card-bg); display: flex; position: relative; overflow: hidden;
@@ -723,7 +741,8 @@
             let displayMessage = escapeHTML(chat.message || "");
             let isMatched = false;
 
-            if (keyword !== "") {
+            // Pencarian baru berjalan jika karakter yang diketik >= 2
+            if (keyword.length >= 2) {
                 const regex = new RegExp(`(${escapeRegExp(keyword)})`, "gi");
                 if (regex.test(displayMessage)) {
                     isMatched = true;
@@ -747,7 +766,7 @@
         updateSearchCounter();
 
         if (matchingElements.length > 0) {
-            // Kita MELOMPAT LANGSUNG KE ELEMEN TERAKHIR (index paling besar/paling baru)
+            // Melompat langsung ke elemen terakhir (paling baru)
             jumpToMatch(matchingElements.length - 1);
         } else {
             messagesEl.scrollTop = messagesEl.scrollHeight;
@@ -756,12 +775,11 @@
 
     function onInChatSearchKey(event) {
         if (event.key === "Enter") {
-            // Karena kita mulai dari paling bawah (terbaru), 
-            // Enter secara default akan diatur untuk mundur/naik ke atas mencari chat lama (-1)
+            // Enter mundur ke atas (-1), Shift+Enter turun ke bawah (1)
             if (event.shiftKey) {
-                navigateSearch(1); // Shift+Enter akan turun ke bawah
+                navigateSearch(1); 
             } else {
-                navigateSearch(-1); // Enter otomatis naik (karena membaca mundur)
+                navigateSearch(-1);
             }
         } else {
             if (window.activeContactName) {
@@ -804,7 +822,6 @@
         if (matchingElements.length === 0) {
             counterEl.textContent = "0/0";
         } else {
-            // Angka counter tetap berjalan normal dari 1 sampai n
             counterEl.textContent = `${currentMatchIndex + 1}/${matchingElements.length}`;
         }
     }

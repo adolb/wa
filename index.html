@@ -2,521 +2,205 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>macOS Login & iMessage Supabase Chat</title>
-    <!-- Supabase JS SDK -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Style Chat</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- Supabase JS Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
-            -webkit-font-smoothing: antialiased;
-        }
-
-        body, html {
-            width: 100vw;
-            height: 100vh;
-            overflow: hidden;
-            background: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80') no-repeat center center fixed;
-            background-size: cover;
-        }
-
-        /* ===== HALAMAN LOGIN (macOS Style) ===== */
-        .lock-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            backdrop-filter: blur(30px);
-            -webkit-backdrop-filter: blur(30px);
-            background: rgba(0, 0, 0, 0.25);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            z-index: 10;
-        }
-
-        .login-card {
-            width: 100%;
-            max-width: 300px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            animation: fadeIn 0.5s ease-in-out;
-        }
-
-        .avatar-container {
-            width: 90px;
-            height: 90px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.2);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-bottom: 20px;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-            border: 1px solid rgba(255, 255, 255, 0.18);
-        }
-
-        .avatar-container svg {
-            width: 50px;
-            height: 50px;
-            fill: rgba(255, 255, 255, 0.9);
-        }
-
-        .login-title {
-            color: #ffffff;
-            font-size: 20px;
-            font-weight: 600;
-            margin-bottom: 20px;
-            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
-        }
-
-        .input-field {
-            width: 100%;
-            padding: 12px 16px;
-            background: rgba(0, 0, 0, 0.5); 
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            border-radius: 20px;
-            color: #ffffff !important;
-            font-size: 15px;
-            outline: none;
-            transition: all 0.3s ease;
-            margin-bottom: 12px;
-            text-align: center;
-        }
-
-        .input-field::placeholder {
-            color: rgba(255, 255, 255, 0.6);
-            text-align: center;
-        }
-
-        .input-field:focus {
-            background: rgba(0, 0, 0, 0.7);
-            border-color: rgba(255, 255, 255, 0.8);
-            box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
-        }
-
-        .submit-btn {
-            width: 100%;
-            padding: 12px;
-            border-radius: 20px;
-            background: rgba(255, 255, 255, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            color: #ffffff;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s;
-            backdrop-filter: blur(10px);
-        }
-
-        .submit-btn:hover {
-            background: rgba(255, 255, 255, 0.5);
-        }
-
-
-        /* ===== HALAMAN CHAT (iMessage Style) ===== */
-        .chat-container {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #ffffff;
-            display: flex;
-            flex-direction: column;
-            display: none; 
-            z-index: 5;
-        }
-
-        .chat-header {
-            padding: 12px 16px;
-            background: rgba(246, 246, 246, 0.94);
-            border-bottom: 0.5px solid #c6c6c8;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            backdrop-filter: blur(20px);
-            padding-top: max(12px, env(safe-area-inset-top));
-        }
-
-        .chat-header-info {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .chat-header-name {
-            font-weight: 600;
-            font-size: 17px;
-            color: #000;
-        }
-
-        .chat-header-status {
-            font-size: 12px;
-            color: #8e8e93;
-        }
-
-        .logout-btn {
-            background: none;
-            border: none;
-            color: #007aff;
-            font-size: 15px;
-            cursor: pointer;
-        }
-
-        .chat-messages {
-            flex: 1;
-            padding: 16px;
-            overflow-y: auto;
-            background: #ffffff;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .message-row {
-            display: flex;
-            flex-direction: column;
-            max-width: 75%;
-            margin-bottom: 4px;
-        }
-
-        .message-row.incoming {
-            align-self: flex-start;
-            align-items: flex-start;
-        }
-
-        .message-row.outgoing {
-            align-self: flex-end;
-            align-items: flex-end;
-        }
-
-        .message-sender {
-            font-size: 11px;
-            color: #8e8e93;
-            margin-bottom: 2px;
-            padding: 0 4px;
-        }
-
-        .message-bubble {
-            padding: 10px 14px;
-            border-radius: 18px;
-            font-size: 15px;
-            line-height: 1.4;
-            word-break: break-word;
-        }
-
-        .incoming .message-bubble {
-            background: #e9e9eb;
-            color: #000000;
-            border-bottom-left-radius: 4px;
-        }
-
-        .outgoing .message-bubble {
-            background: #007aff;
-            color: #ffffff;
-            border-bottom-right-radius: 4px;
-        }
-
-        .message-bubble img {
-            max-width: 100%;
-            border-radius: 12px;
-            display: block;
-            margin-top: 4px;
-        }
-
-        /* ===== INPUT BAR & TEXT BOX PUTIH (TEKS HITAM) ===== */
-        .chat-input-bar {
-            padding: 10px 16px;
-            background: rgba(246, 246, 246, 0.94);
-            border-top: 0.5px solid #c6c6c8;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding-bottom: max(10px, env(safe-area-inset-bottom));
-            backdrop-filter: blur(20px);
-        }
-
-        .media-btn {
-            background: none;
-            border: none;
-            font-size: 24px;
-            color: #007aff;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 32px;
-            height: 32px;
-            font-weight: 300;
-            line-height: 1;
-        }
-
-        .chat-input {
-            flex: 1;
-            padding: 9px 14px;
-            border: 0.5px solid #c6c6c8;
-            border-radius: 20px;
-            background: #ffffff !important; 
-            color: #000000 !important;      
-            font-size: 15px;
-            outline: none;
-            margin: 0;
-            text-align: left;
-        }
-
-        .chat-input::placeholder {
-            color: #8e8e93;
-            text-align: left;
-        }
-
-        .send-chat-btn {
-            background: #007aff;
-            border: none;
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: white;
-            cursor: pointer;
-        }
-
-        .send-chat-btn svg {
-            width: 16px;
-            height: 16px;
-            fill: white;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
-        }
-    </style>
 </head>
-<body>
+<body class="bg-gray-100 h-screen flex justify-center items-center">
 
-    <!-- HALAMAN LOGIN -->
-    <div class="lock-overlay" id="loginScreen">
-        <div class="login-card">
-            <div class="avatar-container">
-                <svg viewBox="0 0 24 24">
-                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-                </svg>
+    <!-- KONTAINER UTAMA (Format Mobile / WhatsApp Web style) -->
+    <div id="app" class="max-w-md mx-auto w-full bg-[#efeae2] h-full sm:h-[90vh] sm:rounded-xl flex flex-col shadow-lg overflow-hidden relative">
+        
+        <!-- HALAMAN PASSWORD (LOGIN SCREEN) -->
+        <div id="password-section" class="absolute inset-0 bg-white z-50 p-6 flex flex-col justify-center items-center space-y-4">
+            <div class="w-16 h-16 bg-emerald-500 rounded-full flex items-center justify-center text-white text-2xl font-bold shadow">💬</div>
+            <h2 class="text-xl font-semibold text-gray-800">Ruang Chat Privat</h2>
+            <p class="text-xs text-gray-500 text-center">Masukkan password untuk mulai mengobrol.</p>
+            <input type="password" id="app-password" placeholder="Password..." class="w-full border p-3 rounded-lg focus:outline-emerald-500" onkeypress="handlePasswordKey(event)">
+            <button onclick="verifyPassword()" class="w-full bg-emerald-600 text-white p-3 rounded-lg font-medium hover:bg-emerald-700 transition">Masuk</button>
+            <p id="password-error" class="text-red-500 text-sm text-center"></p>
+        </div>
+
+        <!-- HEADER WHATSAPP -->
+        <div class="bg-[#00a884] text-white px-4 py-3 flex justify-between items-center shadow">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-emerald-700 rounded-full flex items-center justify-center font-bold">💬</div>
+                <div>
+                    <h1 class="font-bold text-base leading-tight">Ruang Obrolan</h1>
+                    <span id="active-room-info" class="text-xs text-emerald-100">Menghubungkan...</span>
+                </div>
             </div>
-            <div class="login-title">macOS Login</div>
+            <button onclick="lockApp()" class="text-xs bg-emerald-700 px-2 py-1 rounded hover:bg-emerald-800 transition">Kunci</button>
+        </div>
+
+        <!-- KOTAK PESAN (BACKGROUND CHAT WHATSAPP) -->
+        <div id="messages-container" class="flex-1 p-4 overflow-y-auto space-y-2 bg-[radial-gradient(#e5ddd5_1px,transparent_1px)] [background-size:16px_16px]">
+            <!-- Pesan akan masuk di sini secara otomatis -->
+        </div>
+
+        <!-- PANEL INPUT CHAT (BAWAH) -->
+        <div class="bg-[#f0f2f5] p-3 flex items-center space-x-2 border-t border-gray-200">
+            <!-- Pilihan Posisi Bubble (Kiri / Kanan) -->
+            <select id="bubble-side" class="bg-white border text-xs rounded-lg p-2 text-gray-700 focus:outline-emerald-500 font-medium">
+                <option value="right">Kanan</option>
+                <option value="left">Kiri</option>
+            </select>
+
+            <!-- Input Pesan -->
+            <input type="text" id="message-input" placeholder="Ketik pesan..." class="flex-1 bg-white border-none p-2.5 rounded-lg text-sm focus:outline-none shadow-sm" onkeypress="handleMessageKey(event)">
             
-            <form id="loginForm" onsubmit="handleLogin(event)" style="width: 100%;">
-                <input type="text" id="usernameInput" class="input-field" placeholder="Ketik 'alifa' atau 'wildan'" required autocomplete="username">
-                <button type="submit" class="submit-btn">Masuk</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- HALAMAN CHAT iMessage -->
-    <div class="chat-container" id="chatScreen">
-        <div class="chat-header">
-            <button class="logout-btn" onclick="handleLogout()">Keluar</button>
-            <div class="chat-header-info">
-                <span class="chat-header-name" id="chatTitle">iMessage</span>
-                <span class="chat-header-status">Online</span>
-            </div>
-            <div style="width: 45px;"></div>
-        </div>
-
-        <div class="chat-messages" id="chatMessages">
-            <!-- Pesan dimuat dinamis dari Supabase -->
-        </div>
-
-        <div class="chat-input-bar">
-            <label class="media-btn" title="Kirim Gambar">
-                +
-                <input type="file" id="mediaInput" accept="image/*" style="display: none;" onchange="handleImageUpload(event)">
-            </label>
-            <input type="text" id="messageInput" class="input-field chat-input" placeholder="iMessage" onkeypress="handleKeyPress(event)">
-            <button class="send-chat-btn" onclick="sendMessage()" aria-label="Kirim">
-                <svg viewBox="0 0 24 24">
-                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
-                </svg>
+            <!-- Tombol Kirim -->
+            <button onclick="sendMessage()" class="bg-[#00a884] text-white p-2.5 rounded-lg hover:bg-[#01755f] transition flex items-center justify-center">
+                <svg viewBox="0 0 24 24" width="20" height="20" class="fill-current"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path></svg>
             </button>
         </div>
+
     </div>
 
+    <!-- SCRIPT UTAMA -->
     <script>
-        // --- KONFIGURASI SUPABASE ---
-        // Ganti dengan URL dan Anon Key dari Project Supabase Anda
-        const SUPABASE_URL = 'https://YOUR_PROJECT_ID.supabase.co';
-        const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+        const SUPABASE_URL = 'https://awlxjzfadktcthbumxle.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_LnE9IH5KKDzdV-gj9tIb6w_uOGVZi4o';
         
-        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const CORRECT_PASSWORD = "alifasayang";
 
-        let currentUser = localStorage.getItem('mac_chat_user') || '';
-        
-        window.addEventListener('DOMContentLoaded', () => {
-            if (currentUser) {
-                showChatScreen();
+        // Menggunakan satu ruang chat universal agar langsung terhubung
+        const FIXED_ROOM_ID = "00000000-0000-0000-0000-000000000001";
+        let messageSubscription = null;
+
+        window.onload = function() {
+            if (localStorage.getItem("whatsapp_auth") === "true") {
+                openChatApp();
             }
-        });
+        };
 
-        function handleLogin(event) {
-            event.preventDefault();
-            const username = document.getElementById('usernameInput').value.trim().toLowerCase();
-
-            // Batasi hanya untuk 'alifa' atau 'wildan' (atau biarkan bebas sesuai keinginan)
-            if (username === 'alifa' || username === 'wildan') {
-                currentUser = username;
-                localStorage.setItem('mac_chat_user', currentUser);
-                showChatScreen();
+        function verifyPassword() {
+            const pwd = document.getElementById('app-password').value;
+            if (pwd === CORRECT_PASSWORD) {
+                localStorage.setItem("whatsapp_auth", "true");
+                openChatApp();
             } else {
-                alert("Gunakan username 'alifa' atau 'wildan'");
+                document.getElementById('password-error').innerText = "Password salah!";
             }
         }
 
-        function handleLogout() {
-            localStorage.removeItem('mac_chat_user');
-            currentUser = '';
-            document.getElementById('chatScreen').style.display = 'none';
-            document.getElementById('loginScreen').style.display = 'flex';
-            document.getElementById('usernameInput').value = '';
+        function handlePasswordKey(e) {
+            if (e.key === 'Enter') verifyPassword();
         }
 
-        function showChatScreen() {
-            document.getElementById('loginScreen').style.display = 'none';
-            document.getElementById('chatScreen').style.display = 'flex';
-            // Ubah huruf depan jadi kapital untuk judul header
-            const formattedName = currentUser.charAt(0).toUpperCase() + currentUser.slice(1);
-            document.getElementById('chatTitle').innerText = `Chat dengan ${currentUser === 'alifa' ? 'Wildan' : 'Alifa'}`;
+        function lockApp() {
+            localStorage.removeItem("whatsapp_auth");
+            location.reload();
+        }
+
+        async function openChatApp() {
+            document.getElementById('password-section').classList.add('hidden');
+            document.getElementById('active-room-info').innerText = "Online";
             
-            fetchMessages();
+            await ensureRoomExists();
+            loadMessages();
             subscribeToRealtime();
         }
 
-        // --- AMBIL PESAN DARI SUPABASE ---
-        async function fetchMessages() {
-            const { data, error } = await supabaseClient
-                .from('messages')
-                .select('*')
-                .order('created_at', { ascending: true });
-
-            if (!error && data) {
-                renderMessages(data);
+        async function ensureRoomExists() {
+            let { data } = await supabaseClient.from('conversations').select('id').eq('id', FIXED_ROOM_ID).single();
+            if (!data) {
+                await supabaseClient.from('conversations').insert({ id: FIXED_ROOM_ID, user1: 'chat', user2: 'room' });
             }
         }
 
-        // --- RENDER KE TAMPILAN HTML ---
-        function renderMessages(messages) {
-            const container = document.getElementById('chatMessages');
+        async function loadMessages() {
+            const { data, error } = await supabaseClient
+                .from('messages')
+                .select('*')
+                .eq('conversation_id', FIXED_ROOM_ID)
+                .order('created_at', { ascending: true });
+
+            if (error) return console.error(error);
+
+            const container = document.getElementById('messages-container');
             container.innerHTML = '';
-
-            messages.forEach(msg => {
-                const row = document.createElement('div');
-                // Jika pengirim pesan adalah user yang sedang login, letakkan di KANAN (outgoing)
-                const isMe = (msg.sender.toLowerCase() === currentUser.toLowerCase());
-                row.className = `message-row ${isMe ? 'outgoing' : 'incoming'}`;
-
-                let contentHtml = '';
-                if (msg.type === 'image') {
-                    contentHtml = `<div class="message-bubble"><img src="${msg.media_url}" alt="Media"></div>`;
-                } else {
-                    contentHtml = `<div class="message-bubble">${escapeHtml(msg.text)}</div>`;
-                }
-
-                row.innerHTML = `
-                    <span class="message-sender">${escapeHtml(msg.sender)}</span>
-                    ${contentHtml}
-                `;
-                container.appendChild(row);
-            });
-
+            data.forEach(msg => appendMessageToUI(msg));
             container.scrollTop = container.scrollHeight;
         }
 
-        // --- KIRIM PESAN TEKS KE SUPABASE ---
         async function sendMessage() {
-            const input = document.getElementById('messageInput');
-            const text = input.value.trim();
-            if (!text) return;
+            const input = document.getElementById('message-input');
+            const sideSelect = document.getElementById('bubble-side');
+            
+            const content = input.value.trim();
+            const bubbleSide = sideSelect.value; // 'left' atau 'right'
 
+            if (!content) return;
+
+            // sender_name kita manfaatkan untuk menyimpan preferensi posisi bubble ('left' / 'right')
             const { error } = await supabaseClient
                 .from('messages')
-                .insert([{ sender: currentUser, text: text, type: 'text' }]);
+                .insert({
+                    conversation_id: FIXED_ROOM_ID,
+                    sender_name: bubbleSide, 
+                    content: content
+                });
 
             if (error) {
-                console.error('Gagal mengirim pesan:', error.message);
+                alert('Gagal mengirim: ' + error.message);
             } else {
                 input.value = '';
             }
         }
 
-        function handleKeyPress(event) {
-            if (event.key === 'Enter') {
-                sendMessage();
-            }
-        }
-
-        // --- UPLOAD GAMBAR KE SUPABASE STORAGE ---
-        async function handleImageUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const fileExt = file.name.split('.').pop();
-            const fileName = `${Date.now()}.${fileExt}`;
-            const filePath = `${fileName}`;
-
-            // Upload ke Supabase Storage (Pastikan bucket bernama 'chat-media' sudah dibuat)
-            const { data, error } = await supabaseClient.storage
-                .from('chat-media')
-                .upload(filePath, file);
-
-            if (error) {
-                alert('Gagal mengunggah gambar: ' + error.message);
-                return;
-            }
-
-            // Dapatkan Public URL dari gambar yang di-upload
-            const { data: publicURLData } = supabaseClient.storage
-                .from('chat-media')
-                .getPublicUrl(filePath);
-
-            const mediaUrl = publicURLData.publicUrl;
-
-            // Simpan record pesan media ke tabel database 'messages'
-            await supabaseClient
-                .from('messages')
-                .insert([{ sender: currentUser, media_url: mediaUrl, type: 'image' }]);
-
-            event.target.value = '';
-        }
-
-        // --- REALTIME LISTENER SUPABASE ---
         function subscribeToRealtime() {
-            supabaseClient
+            if (messageSubscription) supabaseClient.removeChannel(messageSubscription);
+
+            messageSubscription = supabaseClient
                 .channel('public:messages')
-                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
-                    // Setiap ada data baru masuk dari database, langsung ambil ulang seluruh pesan
-                    fetchMessages();
+                .on('postgres_changes', {
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: 'messages',
+                    filter: `conversation_id=eq.${FIXED_ROOM_ID}`
+                }, payload => {
+                    appendMessageToUI(payload.new);
+                    const container = document.getElementById('messages-container');
+                    container.scrollTop = container.scrollHeight;
                 })
                 .subscribe();
         }
 
+        function appendMessageToUI(msg) {
+            const container = document.getElementById('messages-container');
+            const isRight = msg.sender_name === 'right'; // Cek apakah posisi bubble kanan atau kiri
+
+            const wrapper = document.createElement('div');
+            wrapper.className = `flex w-full mb-1 ${isRight ? 'justify-end' : 'justify-start'}`;
+
+            const bubble = document.createElement('div');
+            // Desain warna ala WhatsApp: Hijau muda (#d9fdd3) untuk kanan, Putih (#ffffff) untuk kiri
+            bubble.className = `max-w-[75%] px-3 py-2 rounded-lg text-sm shadow-sm relative text-gray-800 ${
+                isRight ? 'bg-[#d9fdd3] rounded-tr-none' : 'bg-white rounded-tl-none'
+            }`;
+
+            const timeStr = new Date(msg.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+            bubble.innerHTML = `
+                <p class="break-words pr-12">${escapeHtml(msg.content)}</p>
+                <span class="text-[9px] text-gray-500 float-right ml-2 mt-1 select-none">${timeStr}</span>
+            `;
+
+            wrapper.appendChild(bubble);
+            container.appendChild(wrapper);
+        }
+
+        function handleMessageKey(e) {
+            if (e.key === 'Enter') sendMessage();
+        }
+
         function escapeHtml(text) {
-            if (!text) return '';
-            const map = {
-                '&': '&amp;',
-                '<': '&lt;',
-                '>': '&gt;',
-                '"': '&quot;',
-                "'": '&#039;'
-            };
-            return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+            return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
         }
     </script>
 </body>

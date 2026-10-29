@@ -20,7 +20,6 @@
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
         }
 
-        /* iMac Glassmorphism - Exclusive Dark Mode */
         .imac-window {
             background: rgba(22, 22, 28, 0.82);
             backdrop-filter: blur(50px) saturate(200%);
@@ -44,13 +43,8 @@
             border-right: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        /* Custom Scrollbar macOS */
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb {
             background: rgba(255, 255, 255, 0.25);
             border-radius: 10px;
@@ -133,7 +127,7 @@
                 <h2 class="font-bold text-white text-sm">Galeri Foto</h2>
                 <button onclick="closeGallery()" class="text-xs bg-zinc-700 text-white px-3 py-1.5 rounded-full font-bold">Tutup</button>
             </div>
-            <div id="gallery-grid" class="flex-1 p-4 grid grid-cols-3 gap-2.5 overflow-y-auto">
+            <div id="gallery-grid" class="flex-1 p-1.5 grid grid-cols-3 gap-1.5 overflow-y-auto content-start">
             </div>
         </div>
 
@@ -160,7 +154,7 @@
                 <input type="file" id="image-input" accept="image/png, image/jpeg, image/webp, image/gif" class="hidden" onchange="handleImageSelect(event)">
             </label>
 
-            <input type="text" id="message-input" placeholder="Tulis pesan..." class="flex-1 bg-zinc-800 text-white placeholder-slate-400 border border-zinc-700 px-4 py-2.5 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-inner" onkeypress="handleMessageKey(event)">
+            <input type="text" id="message-input" placeholder="Tulis pesan..." class="flex-1 bg-zinc-800 text-white placeholder-slate-400 border border-zinc-700 p-3.5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-inner" onkeypress="handleMessageKey(event)">
             
             <button onclick="sendMessage()" class="bg-blue-600 hover:bg-blue-500 text-white w-9 h-9 rounded-full flex items-center justify-center shadow-md hover:shadow-blue-500/30 transition active:scale-95 shrink-0">
                 <svg viewBox="0 0 24 24" width="16" height="16" class="fill-current"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path></svg>
@@ -180,6 +174,29 @@
         let inactivityTimer = null;
         let absoluteSessionTimer = null;
         let activeReplyTo = null;
+
+        function playIMessageSound() {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.08);
+
+                gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.25);
+
+                osc.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.25);
+            } catch (e) {
+                console.log("Audio dibatasi browser:", e);
+            }
+        }
 
         function showToast(msg) {
             const toast = document.getElementById('toast-modal');
@@ -227,7 +244,7 @@
 
         window.onload = function() {
             if (sessionStorage.getItem("chat_auth") === "true") {
-                currentSender = sessionStorage.getItem("chat_sender");
+                currentSender = (sessionStorage.getItem("chat_sender") || "").toLowerCase().trim();
                 openChatApp();
             } else {
                 sessionStorage.clear();
@@ -261,7 +278,7 @@
             document.getElementById('password-section').classList.add('hidden');
             document.getElementById('header-title').innerText = `Masuk: ${currentSender}`;
             await ensureRoomExists();
-            loadMessages();
+            await loadMessages();
             subscribeToRealtime();
             resetInactivityTimer();
             startAbsoluteSessionTimer();
@@ -281,13 +298,28 @@
                 .eq('conversation_id', FIXED_ROOM_ID)
                 .order('created_at', { ascending: true });
 
-            if (error) return console.error(error);
+            if (error) {
+                console.error("Gagal mengambil pesan:", error);
+                return;
+            }
 
             const container = document.getElementById('messages-container');
             container.innerHTML = '';
+            
             for (const msg of data) {
-                await appendMessageToUI(msg);
+                try {
+                    await appendMessageToUI(msg);
+                } catch (err) {
+                    console.error("Error rendering pesan ID:", msg.id, err);
+                }
             }
+            
+            // AUTO SCROLL KE PESAN TERAKHIR SAAT PERTAMA KALI DIBUKA
+            scrollToBottom();
+        }
+
+        function scrollToBottom() {
+            const container = document.getElementById('messages-container');
             container.scrollTop = container.scrollHeight;
         }
 
@@ -308,14 +340,19 @@
                 return;
             }
 
-            await supabaseClient.from('messages').insert({
+            const { data, error } = await supabaseClient.from('messages').insert({
                 conversation_id: FIXED_ROOM_ID,
                 sender_name: currentSender,
                 image_path: imagePath,
                 reply_to_id: activeReplyTo ? activeReplyTo.id : null,
                 reply_to_text: activeReplyTo ? (activeReplyTo.content || '[Foto]') : null,
                 reply_to_sender: activeReplyTo ? activeReplyTo.sender_name : null
-            });
+            }).select();
+
+            if (!error && data && data.length > 0) {
+                await appendMessageToUI(data[0]);
+                scrollToBottom();
+            }
 
             cancelReply();
             e.target.value = '';
@@ -327,7 +364,7 @@
 
             if (!content) return;
 
-            const { error } = await supabaseClient
+            const { data, error } = await supabaseClient
                 .from('messages')
                 .insert({
                     conversation_id: FIXED_ROOM_ID,
@@ -336,13 +373,19 @@
                     reply_to_id: activeReplyTo ? activeReplyTo.id : null,
                     reply_to_text: activeReplyTo ? (activeReplyTo.content || '[Foto]') : null,
                     reply_to_sender: activeReplyTo ? activeReplyTo.sender_name : null
-                });
+                })
+                .select();
 
             if (error) {
                 showToast('Gagal mengirim: ' + error.message);
             } else {
                 input.value = '';
                 cancelReply();
+
+                if (data && data.length > 0) {
+                    await appendMessageToUI(data[0]);
+                    scrollToBottom();
+                }
             }
         }
 
@@ -363,23 +406,31 @@
             if (messageSubscription) supabaseClient.removeChannel(messageSubscription);
 
             messageSubscription = supabaseClient
-                .channel('public:messages')
+                .channel('public:messages-realtime')
                 .on('postgres_changes', {
                     event: 'INSERT',
                     schema: 'public',
                     table: 'messages',
                     filter: `conversation_id=eq.${FIXED_ROOM_ID}`
                 }, async payload => {
-                    await appendMessageToUI(payload.new);
-                    const container = document.getElementById('messages-container');
-                    container.scrollTop = container.scrollHeight;
+                    const sender = (payload.new.sender_name || "").toLowerCase().trim();
+                    if (sender !== currentSender.toLowerCase().trim()) {
+                        try {
+                            playIMessageSound();
+                            await appendMessageToUI(payload.new);
+                            scrollToBottom();
+                        } catch (err) {
+                            console.error("Error realtime message render:", err);
+                        }
+                    }
                 })
                 .subscribe();
         }
 
         async function appendMessageToUI(msg) {
             const container = document.getElementById('messages-container');
-            const isLeft = (msg.sender_name.toLowerCase() !== currentSender.toLowerCase());
+            const msgSender = (msg.sender_name || "").toLowerCase().trim();
+            const isLeft = (msgSender !== currentSender.toLowerCase().trim());
 
             const wrapper = document.createElement('div');
             wrapper.className = `flex w-full mb-1.5 group relative ${isLeft ? 'justify-start' : 'justify-end'}`;
@@ -403,9 +454,13 @@
 
             let imageHtml = '';
             if (msg.image_path) {
-                const { data } = await supabaseClient.storage.from('chat-images').createSignedUrl(msg.image_path, 3600);
-                if (data) {
-                    imageHtml = `<img src="${data.signedUrl}" class="rounded-xl mb-1 max-h-60 object-cover shadow cursor-pointer hover:opacity-95 transition" onclick="openImageModal('${data.signedUrl}')">`;
+                try {
+                    const { data } = await supabaseClient.storage.from('chat-images').createSignedUrl(msg.image_path, 3600);
+                    if (data && data.signedUrl) {
+                        imageHtml = `<img src="${data.signedUrl}" class="rounded-xl mb-1 max-h-60 object-cover shadow cursor-pointer hover:opacity-95 transition" onclick="openImageModal('${data.signedUrl}')">`;
+                    }
+                } catch(e) {
+                    console.error("Gagal muat URL foto:", e);
                 }
             }
 
@@ -418,10 +473,8 @@
                 <span class="text-[9px] ${isLeft ? 'text-slate-400' : 'text-white/80'} float-right ml-2 mt-1 select-none font-medium">${timeStr}</span>
             `;
 
-            // Tombol titik 3 untuk menu Reply
-            // Untuk bubble kanan (pengirim) ditaruh di pojok kanan atas (`right-1`), untuk bubble kiri tetap ditaruh di kiri atas (`left-1`)
             const menuBtn = document.createElement('button');
-            menuBtn.className = `absolute top-1 ${isLeft ? 'left-1' : 'right-1'} opacity-0 group-hover:opacity-100 ${isLeft ? 'bg-white/10 text-slate-300' : 'bg-white/20 text-white'} hover:scale-110 rounded-full p-1 transition shadow-xs`;
+            menuBtn.className = `absolute top-1 right-1 opacity-0 group-hover:opacity-100 ${isLeft ? 'bg-white/10 text-slate-300' : 'bg-white/20 text-white'} hover:scale-110 rounded-full p-1 transition shadow-xs`;
             menuBtn.innerHTML = `<svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>`;
             menuBtn.onclick = (e) => {
                 e.stopPropagation();
@@ -454,12 +507,16 @@
             }
 
             for (const item of data) {
-                const { data: urlData } = await supabaseClient.storage.from('chat-images').createSignedUrl(item.image_path, 3600);
-                if (urlData) {
-                    const imgBox = document.createElement('div');
-                    imgBox.className = 'aspect-square rounded-2xl overflow-hidden shadow-md cursor-pointer bg-zinc-800 border border-white/10';
-                    imgBox.innerHTML = `<img src="${urlData.signedUrl}" class="w-full h-full object-cover hover:scale-105 transition duration-300" onclick="openImageModal('${urlData.signedUrl}')">`;
-                    grid.appendChild(imgBox);
+                try {
+                    const { data: urlData } = await supabaseClient.storage.from('chat-images').createSignedUrl(item.image_path, 3600);
+                    if (urlData && urlData.signedUrl) {
+                        const imgBox = document.createElement('div');
+                        imgBox.className = 'aspect-square overflow-hidden cursor-pointer bg-zinc-900 rounded-xl shadow-xs';
+                        imgBox.innerHTML = `<img src="${urlData.signedUrl}" class="w-full h-full object-cover hover:scale-105 transition duration-300" onclick="openImageModal('${urlData.signedUrl}')">`;
+                        grid.sdkAppendChild ? grid.sdkAppendChild(imgBox) : grid.appendChild(imgBox);
+                    }
+                } catch(e) {
+                    console.error("Gagal render item galeri:", e);
                 }
             }
         }

@@ -6,9 +6,16 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>iOS Style Chat</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Supabase JS Client library -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        * {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
         html, body {
             overscroll-behavior: none;
             position: fixed;
@@ -16,81 +23,121 @@
             height: 100%;
             overflow: hidden;
         }
-        /* Efek Glassmorphism iOS yang diperkuat */
+        /* Enhanced iOS Glassmorphism styling */
         .ios-glass {
-            background: rgba(255, 255, 255, 0.65);
+            background: rgba(255, 255, 255, 0.75);
             backdrop-filter: blur(25px);
             -webkit-backdrop-filter: blur(25px);
-            border-top: 1px solid rgba(255, 255, 255, 0.4);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+            border-top: 1px solid rgba(255, 255, 255, 0.5);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.5);
         }
         .ios-glass-header {
-            background: rgba(255, 255, 255, 0.75);
+            background: rgba(255, 255, 255, 0.82);
             backdrop-filter: blur(30px);
             -webkit-backdrop-filter: blur(30px);
-            border-bottom: 0.5px solid rgba(0, 0, 0, 0.1);
+            border-bottom: 0.5px solid rgba(0, 0, 0, 0.12);
         }
         .ios-glass-modal {
-            background: rgba(255, 255, 255, 0.85);
+            background: rgba(255, 255, 255, 0.88);
             backdrop-filter: blur(40px);
             -webkit-backdrop-filter: blur(40px);
         }
+        /* Custom scrollbar styling for chat container */
+        #messages-container::-webkit-scrollbar {
+            width: 5px;
+        }
+        #messages-container::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        #messages-container::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.15);
+            border-radius: 10px;
+        }
     </style>
 </head>
-<body class="bg-gradient-to-br from-gray-900 via-gray-800 to-black h-screen flex justify-center items-center">
+<body class="bg-gradient-to-br from-slate-900 via-gray-900 to-zinc-900 h-screen flex justify-center items-center p-0 sm:p-4">
 
-    <div id="app" class="w-full h-full sm:max-w-md sm:h-[90vh] sm:rounded-3xl flex flex-col shadow-2xl overflow-hidden relative bg-[#efeae2]">
+    <!-- MAIN APP CONTAINER -->
+    <div id="app" class="w-full h-full sm:max-w-md sm:h-[92vh] sm:rounded-3xl flex flex-col shadow-2xl overflow-hidden relative bg-[#efeae2]">
         
-        <!-- HALAMAN LOGIN -->
-        <div id="password-section" class="absolute inset-0 ios-glass-modal z-50 p-6 flex flex-col justify-center items-center space-y-4">
+        <!-- HALAMAN LOGIN / AUTHENTICATION -->
+        <div id="password-section" class="absolute inset-0 ios-glass-modal z-50 p-6 flex flex-col justify-center items-center space-y-5 transition-all duration-300">
+            <div class="w-20 h-20 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-3xl flex items-center justify-center text-white text-3xl shadow-lg ring-4 ring-white/50 mb-2">
+                💬
+            </div>
+            <div class="text-center space-y-1">
+                <h2 class="text-2xl font-bold text-gray-800 tracking-tight">Selamat Datang</h2>
+                <p class="text-xs text-gray-500 font-medium">Masukkan kata sandi untuk melanjutkan</p>
+            </div>
             
-            <h2 class="text-xl font-semibold text-gray-800"></h2>
-            
-            <input type="password" id="app-password" placeholder="" class="w-full bg-white/70 border border-gray-300/60 p-3 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm shadow-inner" onkeypress="handleLoginKey(event)">
+            <div class="w-full space-y-3 max-w-xs">
+                <input type="password" id="app-password" placeholder="Password..." class="w-full bg-white/80 border border-gray-300/70 px-4 py-3 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm shadow-inner text-gray-800 transition" onkeypress="handleLoginKey(event)">
 
-            <button onclick="verifyLogin()" class="w-full bg-blue-600 text-white p-3 rounded-2xl font-medium shadow-md hover:bg-blue-700 active:scale-95 transition">Log In</button>
-            <p id="password-error" class="text-red-500 text-xs text-center"></p>
+                <button onclick="verifyLogin()" class="w-full bg-blue-600 text-white py-3 rounded-2xl font-semibold text-sm shadow-md hover:bg-blue-700 active:scale-95 transition-all duration-200">
+                    Log In
+                </button>
+                <p id="password-error" class="text-red-500 text-xs font-medium text-center h-4"></p>
+            </div>
         </div>
 
         <!-- HEADER ALA iOS -->
-        <div class="ios-glass-header px-4 py-3 flex justify-between items-center z-10">
+        <div class="ios-glass-header px-4 py-3 flex justify-between items-center z-10 shadow-sm">
             <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 bg-gradient-to-tr from-blue-500 to-indigo-500 rounded-full flex items-center justify-center text-white font-bold text-sm shadow">💬</div>
-                <div>
-                    <h1 id="header-title" class="font-bold text-sm text-gray-800">Chat</h1>
-                    <span class="text-[10px] text-emerald-600 font-medium">● Online</span>
+                <div class="w-10 h-10 bg-gradient-to-tr from-blue-500 to-indigo-500 rounded-full flex items-center justify-center text-white font-bold text-base shadow-md">
+                    💬
+                </div>
+                <div class="flex flex-col">
+                    <h1 id="header-title" class="font-bold text-xs sm:text-sm text-gray-800 truncate max-w-[180px]">Chat</h1>
+                    <span class="text-[10px] text-emerald-600 font-semibold flex items-center gap-1">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block animate-pulse"></span> Online
+                    </span>
                 </div>
             </div>
-            <button onclick="logout()" class="text-xs bg-gray-200/80 px-3 py-1.5 rounded-full text-gray-700 font-medium active:scale-95 transition">Keluar</button>
+            <button onclick="logout()" class="text-xs bg-gray-200/80 hover:bg-gray-300/80 text-gray-700 font-semibold px-3 py-1.5 rounded-full active:scale-95 transition">
+                Keluar
+            </button>
         </div>
 
         <!-- KOTAK PESAN -->
-        <div id="messages-container" class="flex-1 p-4 overflow-y-auto space-y-2 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] [background-size:16px_16px]">
+        <div id="messages-container" class="flex-1 p-4 overflow-y-auto space-y-2.5 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] [background-size:16px_16px]">
+            <!-- Message bubbles generated dynamically -->
         </div>
 
         <!-- MODAL GAMBAR -->
-        <div id="image-modal" class="fixed inset-0 bg-black/90 z-50 hidden flex items-center justify-center p-4 cursor-pointer" onclick="closeImageModal()">
-            <img id="modal-img" class="max-w-full max-h-full rounded-2xl shadow-2xl object-contain">
+        <div id="image-modal" class="fixed inset-0 bg-black/90 z-50 hidden flex items-center justify-center p-4 cursor-pointer transition-opacity duration-300" onclick="closeImageModal()">
+            <div class="relative max-w-full max-h-full">
+                <img id="modal-img" class="max-w-full max-h-[85vh] rounded-2xl shadow-2xl object-contain">
+                <button class="absolute -top-4 -right-4 bg-white/20 text-white rounded-full w-8 h-8 flex items-center justify-center backdrop-blur-md hover:bg-white/40">✕</button>
+            </div>
+        </div>
+
+        <!-- NOTIFICATION / TOAST MODAL (Non-blocking Alert replacement) -->
+        <div id="toast-modal" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 hidden transition-all duration-300">
+            <div class="bg-gray-900/90 text-white text-xs px-4 py-2.5 rounded-full shadow-2xl backdrop-blur-md flex items-center space-x-2 border border-white/10">
+                <span id="toast-icon">ℹ️</span>
+                <span id="toast-message">Pesan notifikasi</span>
+            </div>
         </div>
 
         <!-- PANEL INPUT -->
-        <div class="ios-glass p-3 flex items-center space-x-2 z-10">
-            <label class="cursor-pointer text-gray-500 hover:text-blue-600 p-2">
+        <div class="ios-glass p-3 flex items-center space-x-2 z-10 border-t border-gray-200/50">
+            <label class="cursor-pointer text-gray-500 hover:text-blue-600 p-2 rounded-full hover:bg-gray-100/50 transition">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
                 <input type="file" id="image-input" accept="image/png, image/jpeg, image/webp, image/gif" class="hidden" onchange="handleImageSelect(event)">
             </label>
 
-            <input type="text" id="message-input" placeholder="Pesan..." class="flex-1 bg-white/70 border border-gray-300/50 px-4 py-2 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-inner" onkeypress="handleMessageKey(event)">
+            <input type="text" id="message-input" placeholder="Pesan..." class="flex-1 bg-white/80 border border-gray-300/60 px-4 py-2 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-inner text-gray-800" onkeypress="handleMessageKey(event)">
             
-            <button onclick="sendMessage()" class="bg-blue-600 text-white w-9 h-9 rounded-full flex items-center justify-center shadow hover:bg-blue-700 transition active:scale-95">
-                <svg viewBox="0 0 24 24" width="16" height="16" class="fill-current"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path></svg>
+            <button onclick="sendMessage()" class="bg-blue-600 text-white w-9 h-9 rounded-full flex items-center justify-center shadow-md hover:bg-blue-700 active:scale-95 transition-all">
+                <svg viewBox="0 0 24 24" width="16" height="16" class="fill-current transform translate-x-0.5"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path></svg>
             </button>
         </div>
     </div>
 
     <script>
+        // Configuration for Supabase Backend
         const SUPABASE_URL = 'https://awlxjzfadktcthbumxle.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_LnE9IH5KKDzdV-gj9tIb6w_uOGVZi4o';
         
@@ -100,15 +147,42 @@
         let currentSender = "";
         let messageSubscription = null;
         let inactivityTimer = null;
+        let absoluteSessionTimer = null;
 
+        // Custom Toast Notification instead of Browser Alert
+        function showToast(message, icon = 'ℹ️') {
+            const toast = document.getElementById('toast-modal');
+            document.getElementById('toast-message').innerText = message;
+            document.getElementById('toast-icon').innerText = icon;
+            toast.classList.remove('hidden');
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 3500);
+        }
+
+        // 1-Minute Inactivity Timer (Auto-lock)
         function resetInactivityTimer() {
             clearTimeout(inactivityTimer);
-            inactivityTimer = setTimeout(() => {
-                if (localStorage.getItem("chat_auth") === "true") {
-                    alert("Sesi berakhir karena tidak ada aktivitas.");
+            // Only set timer if user is authenticated in current session
+            if (sessionStorage.getItem("chat_auth") === "true") {
+                inactivityTimer = setTimeout(() => {
+                    showToast("Sesi dikunci: 1 menit tanpa aktivitas.", "🔒");
+                    setTimeout(() => {
+                        logout();
+                    }, 1200);
+                }, 1 * 60 * 1000); // 1 Minute auto-lock
+            }
+        }
+
+        // 5-Minute Absolute Session Timeout (Forced Re-login regardless of activity)
+        function startAbsoluteSessionTimer() {
+            clearTimeout(absoluteSessionTimer);
+            absoluteSessionTimer = setTimeout(() => {
+                showToast("Sesi 5 menit telah berakhir demi keamanan.", "🛡️");
+                setTimeout(() => {
                     logout();
-                }
-            }, 5 * 60 * 1000);
+                }, 1500);
+            }, 5 * 60 * 1000); // 5 Minutes absolute limit
         }
 
         ['mousemove', 'keydown', 'touchstart', 'click'].forEach(evt => {
@@ -116,23 +190,33 @@
         });
 
         window.onload = function() {
-            if (localStorage.getItem("chat_auth") === "true") {
-                currentSender = localStorage.getItem("chat_sender");
+            // Ephemeral session handling: Only check sessionStorage (Cleared on refresh, tab close, or new tab)
+            if (sessionStorage.getItem("chat_auth") === "true") {
+                currentSender = sessionStorage.getItem("chat_sender") || "";
                 openChatApp();
+            } else {
+                // Ensure password section is visible if no session exists
+                document.getElementById('password-section').classList.remove('hidden', 'opacity-0', 'pointer-events-none');
             }
         };
 
         function verifyLogin() {
-            const pwd = document.getElementById('app-password').value.trim().toLowerCase();
+            const pwdInput = document.getElementById('app-password');
+            const pwd = pwdInput.value.trim().toLowerCase();
 
             if (pwd !== "alifasayang" && pwd !== "wildanganteng") {
                 document.getElementById('password-error').innerText = "Password salah!";
+                pwdInput.classList.add('border-red-400');
                 return;
             }
 
             currentSender = pwd;
-            localStorage.setItem("chat_auth", "true");
-            localStorage.setItem("chat_sender", currentSender);
+            // Use sessionStorage instead of localStorage so session is lost on refresh / new tab / browser close
+            sessionStorage.setItem("chat_auth", "true");
+            sessionStorage.setItem("chat_sender", currentSender);
+            
+            // Start 5-minute absolute timeout counter from login time
+            startAbsoluteSessionTimer();
             openChatApp();
         }
 
@@ -141,25 +225,39 @@
         }
 
         function logout() {
-            localStorage.removeItem("chat_auth");
-            localStorage.removeItem("chat_sender");
+            clearTimeout(inactivityTimer);
+            clearTimeout(absoluteSessionTimer);
+            sessionStorage.removeItem("chat_auth");
+            sessionStorage.removeItem("chat_sender");
             location.reload();
         }
 
         async function openChatApp() {
-            document.getElementById('password-section').classList.add('hidden');
-            document.getElementById('header-title').innerText = `Masuk sebagai: ${currentSender}`;
+            document.getElementById('password-section').classList.add('opacity-0', 'pointer-events-none');
+            setTimeout(() => {
+                document.getElementById('password-section').classList.add('hidden');
+            }, 300);
+
+            document.getElementById('header-title').innerText = `Pengirim: ${currentSender}`;
             
             await ensureRoomExists();
-            loadMessages();
+            await loadMessages();
             subscribeToRealtime();
             resetInactivityTimer();
         }
 
         async function ensureRoomExists() {
-            let { data } = await supabaseClient.from('conversations').select('id').eq('id', FIXED_ROOM_ID).single();
-            if (!data) {
-                await supabaseClient.from('conversations').insert({ id: FIXED_ROOM_ID, user1: 'alifasayang', user2: 'wildanganteng' });
+            try {
+                let { data } = await supabaseClient.from('conversations').select('id').eq('id', FIXED_ROOM_ID).single();
+                if (!data) {
+                    await supabaseClient.from('conversations').insert({ 
+                        id: FIXED_ROOM_ID, 
+                        user1: 'alifasayang', 
+                        user2: 'wildanganteng' 
+                    });
+                }
+            } catch (err) {
+                console.warn('Initialization notice:', err);
             }
         }
 
@@ -170,12 +268,19 @@
                 .eq('conversation_id', FIXED_ROOM_ID)
                 .order('created_at', { ascending: true });
 
-            if (error) return console.error(error);
+            if (error) {
+                console.error('Error fetching messages:', error);
+                showToast('Gagal memuat pesan', '❌');
+                return;
+            }
 
             const container = document.getElementById('messages-container');
             container.innerHTML = '';
-            for (const msg of data) {
-                await appendMessageToUI(msg);
+            
+            if (data && data.length > 0) {
+                for (const msg of data) {
+                    await appendMessageToUI(msg);
+                }
             }
             container.scrollTop = container.scrollHeight;
         }
@@ -183,6 +288,8 @@
         async function handleImageSelect(e) {
             const file = e.target.files[0];
             if (!file) return;
+
+            showToast("Mengunggah gambar...", "⏳");
 
             const fileExt = file.name.split('.').pop();
             const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
@@ -193,15 +300,21 @@
                 .upload(imagePath, file);
 
             if (uploadError) {
-                alert('Gagal mengunggah gambar: ' + uploadError.message);
+                showToast('Gagal unggah: ' + uploadError.message, '❌');
                 return;
             }
 
-            await supabaseClient.from('messages').insert({
+            const { error: msgError } = await supabaseClient.from('messages').insert({
                 conversation_id: FIXED_ROOM_ID,
                 sender_name: currentSender,
                 image_path: imagePath
             });
+
+            if (msgError) {
+                showToast('Gagal mengirim gambar', '❌');
+            } else {
+                showToast('Gambar berhasil terkirim', '📸');
+            }
 
             e.target.value = '';
         }
@@ -221,7 +334,7 @@
                 });
 
             if (error) {
-                alert('Gagal mengirim: ' + error.message);
+                showToast('Gagal mengirim pesan', '❌');
             } else {
                 input.value = '';
             }
@@ -248,14 +361,14 @@
         async function appendMessageToUI(msg) {
             const container = document.getElementById('messages-container');
             
-            // POV: Jika pesan dikirim oleh user yang sedang login, di kanan. Jika lawan bicara, di kiri.
+            // Checks if sender is the logged in user or conversation partner
             const isLeft = (msg.sender_name.toLowerCase() !== currentSender.toLowerCase());
 
             const wrapper = document.createElement('div');
             wrapper.className = `flex w-full mb-1.5 ${isLeft ? 'justify-start' : 'justify-end'}`;
 
             const bubble = document.createElement('div');
-            bubble.className = `max-w-[75%] px-3.5 py-2 rounded-2xl text-sm shadow-sm relative text-gray-800 ${
+            bubble.className = `max-w-[78%] px-3.5 py-2 rounded-2xl text-sm shadow-sm relative text-gray-800 ${
                 isLeft ? 'bg-white rounded-tl-sm' : 'bg-[#d9fdd3] rounded-tr-sm'
             }`;
 
@@ -264,18 +377,20 @@
                 const { data } = await supabaseClient.storage
                     .from('chat-images')
                     .createSignedUrl(msg.image_path, 3600);
-                if (data) {
-                    imageHtml = `<img src="${data.signedUrl}" class="rounded-xl mb-1 max-h-60 object-cover shadow cursor-pointer hover:opacity-95 transition" onclick="openImageModal('${data.signedUrl}')">`;
+                if (data && data.signedUrl) {
+                    imageHtml = `<img src="${data.signedUrl}" class="rounded-xl mb-1 max-h-60 object-cover shadow-sm cursor-pointer hover:opacity-90 transition" onclick="openImageModal('${data.signedUrl}')">`;
+                } else {
+                    imageHtml = `<div class="p-2 text-xs text-gray-400 italic">[Gambar tidak dapat dimuat]</div>`;
                 }
             }
 
-            const timeStr = new Date(msg.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            const dateObj = msg.created_at ? new Date(msg.created_at) : new Date();
+            const timeStr = dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
 
-            // Nama pengirim sengaja dihilangkan dari bubble agar bersih seperti WhatsApp
             bubble.innerHTML = `
                 ${imageHtml}
-                ${msg.content ? `<p class="break-words pr-10 leading-relaxed">${escapeHtml(msg.content)}</p>` : ''}
-                <span class="text-[9px] text-gray-400 float-right ml-2 mt-1 select-none">${timeStr}</span>
+                ${msg.content ? `<p class="break-words pr-10 leading-relaxed text-sm">${escapeHtml(msg.content)}</p>` : ''}
+                <span class="text-[9px] text-gray-400 float-right ml-2 mt-1 select-none font-medium">${timeStr}</span>
             `;
 
             wrapper.appendChild(bubble);

@@ -64,16 +64,39 @@
             <span id="toast-message"></span>
         </div>
 
-        <!-- HALAMAN LOGIN -->
-        <div id="password-section" class="absolute inset-0 imac-sidebar-glass z-50 p-6 flex flex-col justify-center items-center space-y-4">
+        <!-- HALAMAN LOGIN PASSCODE iPHONE -->
+        <div id="password-section" class="absolute inset-0 imac-sidebar-glass z-50 p-6 flex flex-col justify-center items-center space-y-6">
             <div class="w-16 h-16 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center text-white text-3xl shadow-xl mb-1">💬</div>
-            <h2 class="text-xl font-bold text-white tracking-tight">Selamat Datang Kembali</h2>
-            <p class="text-xs text-slate-400 font-medium">Masukkan sandi untuk memuat sesi</p>
+            <div class="text-center space-y-1">
+                <h2 class="text-lg font-bold text-white tracking-tight">Masukkan Passcode</h2>
+                <p class="text-xs text-slate-400 font-medium">Masukkan 4 digit sandi untuk masuk</p>
+            </div>
 
-            <input type="password" id="app-password" placeholder="Password..." class="w-full bg-zinc-800 text-white placeholder-slate-400 border border-zinc-700 p-3.5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm shadow-inner" onkeypress="handleLoginKey(event)">
+            <!-- Indikator Titik Passcode -->
+            <div class="flex space-x-4 my-2">
+                <div id="dot-1" class="w-3.5 h-3.5 rounded-full border border-white/40 transition-all duration-200"></div>
+                <div id="dot-2" class="w-3.5 h-3.5 rounded-full border border-white/40 transition-all duration-200"></div>
+                <div id="dot-3" class="w-3.5 h-3.5 rounded-full border border-white/40 transition-all duration-200"></div>
+                <div id="dot-4" class="w-3.5 h-3.5 rounded-full border border-white/40 transition-all duration-200"></div>
+            </div>
 
-            <button onclick="verifyLogin()" class="w-full bg-blue-600 hover:bg-blue-500 text-white p-3.5 rounded-2xl font-semibold shadow-lg hover:shadow-blue-500/30 active:scale-95 transition-all">Masuk Sesi</button>
-            <p id="password-error" class="text-red-500 text-xs text-center font-semibold"></p>
+            <p id="password-error" class="text-red-400 text-xs text-center font-semibold h-4"></p>
+
+            <!-- Keypad Angka ala iPhone -->
+            <div class="grid grid-cols-3 gap-4 max-w-[260px] w-full">
+                <button onclick="pressKey('1')" class="h-16 w-16 mx-auto rounded-full bg-white/10 hover:bg-white/20 active:bg-white/30 text-white text-2xl font-semibold flex items-center justify-center transition select-none">1</button>
+                <button onclick="pressKey('2')" class="h-16 w-16 mx-auto rounded-full bg-white/10 hover:bg-white/20 active:bg-white/30 text-white text-2xl font-semibold flex items-center justify-center transition select-none">2</button>
+                <button onclick="pressKey('3')" class="h-16 w-16 mx-auto rounded-full bg-white/10 hover:bg-white/20 active:bg-white/30 text-white text-2xl font-semibold flex items-center justify-center transition select-none">3</button>
+                <button onclick="pressKey('4')" class="h-16 w-16 mx-auto rounded-full bg-white/10 hover:bg-white/20 active:bg-white/30 text-white text-2xl font-semibold flex items-center justify-center transition select-none">4</button>
+                <button onclick="pressKey('5')" class="h-16 w-16 mx-auto rounded-full bg-white/10 hover:bg-white/20 active:bg-white/30 text-white text-2xl font-semibold flex items-center justify-center transition select-none">5</button>
+                <button onclick="pressKey('6')" class="h-16 w-16 mx-auto rounded-full bg-white/10 hover:bg-white/20 active:bg-white/30 text-white text-2xl font-semibold flex items-center justify-center transition select-none">6</button>
+                <button onclick="pressKey('7')" class="h-16 w-16 mx-auto rounded-full bg-white/10 hover:bg-white/20 active:bg-white/30 text-white text-2xl font-semibold flex items-center justify-center transition select-none">7</button>
+                <button onclick="pressKey('8')" class="h-16 w-16 mx-auto rounded-full bg-white/10 hover:bg-white/20 active:bg-white/30 text-white text-2xl font-semibold flex items-center justify-center transition select-none">8</button>
+                <button onclick="pressKey('9')" class="h-16 w-16 mx-auto rounded-full bg-white/10 hover:bg-white/20 active:bg-white/30 text-white text-2xl font-semibold flex items-center justify-center transition select-none">9</button>
+                <div></div>
+                <button onclick="pressKey('0')" class="h-16 w-16 mx-auto rounded-full bg-white/10 hover:bg-white/20 active:bg-white/30 text-white text-2xl font-semibold flex items-center justify-center transition select-none">0</button>
+                <button onclick="deleteKey()" class="h-16 w-16 mx-auto rounded-full flex items-center justify-center text-slate-300 hover:text-white active:scale-95 transition select-none text-xl font-bold">⌫</button>
+            </div>
         </div>
 
         <!-- SIDEBAR DRAWER -->
@@ -174,6 +197,7 @@
         let inactivityTimer = null;
         let absoluteSessionTimer = null;
         let activeReplyTo = null;
+        let enteredPasscode = "";
 
         function playIMessageSound() {
             try {
@@ -251,20 +275,53 @@
             }
         };
 
-        function verifyLogin() {
-            const pwd = document.getElementById('app-password').value.trim().toLowerCase();
-            if (pwd !== "alifasayang" && pwd !== "wildanganteng") {
-                document.getElementById('password-error').innerText = "Password salah!";
+        function pressKey(digit) {
+            if (enteredPasscode.length < 4) {
+                enteredPasscode += digit;
+                updatePasscodeDots();
+                if (enteredPasscode.length === 4) {
+                    setTimeout(verifyPasscode, 150);
+                }
+            }
+        }
+
+        function deleteKey() {
+            if (enteredPasscode.length > 0) {
+                enteredPasscode = enteredPasscode.slice(0, -1);
+                updatePasscodeDots();
+                document.getElementById('password-error').innerText = "";
+            }
+        }
+
+        function updatePasscodeDots() {
+            for (let i = 1; i <= 4; i++) {
+                const dot = document.getElementById(`dot-${i}`);
+                if (i <= enteredPasscode.length) {
+                    dot.classList.add('bg-white', 'border-white');
+                    dot.classList.remove('border-white/40');
+                } else {
+                    dot.classList.remove('bg-white', 'border-white');
+                    dot.classList.add('border-white/40');
+                }
+            }
+        }
+
+        function verifyPasscode() {
+            if (enteredPasscode === "4646") {
+                currentSender = "wildanganteng";
+            } else if (enteredPasscode === "6464") {
+                currentSender = "alifasayang";
+            } else {
+                document.getElementById('password-error').innerText = "Passcode salah!";
+                setTimeout(() => {
+                    enteredPasscode = "";
+                    updatePasscodeDots();
+                }, 400);
                 return;
             }
-            currentSender = pwd;
             sessionStorage.setItem("chat_auth", "true");
             sessionStorage.setItem("chat_sender", currentSender);
             openChatApp();
-        }
-
-        function handleLoginKey(e) {
-            if (e.key === 'Enter') verifyLogin();
         }
 
         function logout() {
@@ -314,7 +371,6 @@
                 }
             }
             
-            // AUTO SCROLL KE PESAN TERAKHIR SAAT PERTAMA KALI DIBUKA
             scrollToBottom();
         }
 
@@ -513,7 +569,7 @@
                         const imgBox = document.createElement('div');
                         imgBox.className = 'aspect-square overflow-hidden cursor-pointer bg-zinc-900 rounded-xl shadow-xs';
                         imgBox.innerHTML = `<img src="${urlData.signedUrl}" class="w-full h-full object-cover hover:scale-105 transition duration-300" onclick="openImageModal('${urlData.signedUrl}')">`;
-                        grid.sdkAppendChild ? grid.sdkAppendChild(imgBox) : grid.appendChild(imgBox);
+                        grid.appendChild(imgBox);
                     }
                 } catch(e) {
                     console.error("Gagal render item galeri:", e);

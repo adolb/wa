@@ -92,7 +92,7 @@
     <div id="app" class="w-full h-[100dvh] sm:h-[92vh] sm:max-w-md sm:rounded-3xl flex flex-col overflow-hidden relative cozy-window transition-all duration-300">
         
         <!-- ALERT TOAST -->
-        <div id="toast-modal" class="hidden absolute top-16 left-1/2 -translate-x-1/2 z-50 bg-[#5a3b40] text-[#fff6f8] text-xs font-semibold px-4 py-2.5 rounded-full shadow-lg backdrop-blur-xl transition-all">
+        <div id="toast-modal" class="hidden absolute top-16 left-1/2 -translate-x-1/2 z-50 bg-[#5a3b40] text-[#fff6f8] text-xs font-semibold px-4 py-2.5 rounded-full shadow-lg backdrop-blur-xl transition-all text-center max-w-[85%]">
             <span id="toast-message"></span>
         </div>
 
@@ -141,10 +141,17 @@
                 <button onclick="toggleSidebar()" class="text-[#8c666d] font-bold text-sm hover:opacity-75 p-1">✕</button>
             </div>
             
-            <div class="flex-1 p-4 space-y-2 overflow-y-auto">
+            <div class="flex-1 p-4 space-y-2.5 overflow-y-auto">
+                <!-- Menu Galeri Kenangan -->
                 <button onclick="openGallery()" class="w-full flex items-center space-x-3 p-3.5 rounded-2xl bg-white/80 hover:bg-[#fce3e8] text-[#4a3236] text-sm font-semibold shadow-xs transition border border-[#ecc4cd]/60">
                     <span class="text-xl">🌷</span>
                     <span class="font-semibold">Galeri Kenangan</span>
+                </button>
+
+                <!-- Menu Arsip Harian (Folder Per Hari) -->
+                <button onclick="openArchiveMenu()" class="w-full flex items-center space-x-3 p-3.5 rounded-2xl bg-white/80 hover:bg-[#fce3e8] text-[#4a3236] text-sm font-semibold shadow-xs transition border border-[#ecc4cd]/60">
+                    <span class="text-xl">📖</span>
+                    <span class="font-semibold">Arsip Harian</span>
                 </button>
             </div>
 
@@ -164,7 +171,7 @@
                 <div>
                     <h1 id="header-title" class="font-bold text-sm text-[#4a3236] tracking-tight">Chat</h1>
                     <span class="text-[10px] text-[#7ca882] font-semibold flex items-center gap-1">
-                        <span class="w-1.5 h-1.5 rounded-full bg-[#7ca882] animate-pulse"></span> Online ♥
+                        <span class="w-1.5 h-1.5 rounded-full bg-[#7ca882] animate-pulse"></span> Hari Ini (Mulai 00:00) ♥
                     </span>
                 </div>
             </div>
@@ -178,7 +185,7 @@
             <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-7xl opacity-30 select-none">🎀</div>
         </div>
 
-        <!-- KOTAK PESAN -->
+        <!-- KOTAK PESAN (HANYA MENAMPILKAN CHAT HARI INI MULAI JAM 00:00) -->
         <div id="messages-container" class="flex-1 p-4 overflow-y-auto space-y-3 floral-bg relative z-1">
         </div>
 
@@ -189,6 +196,16 @@
                 <button onclick="closeGallery()" class="text-xs bg-[#f5b7c7] text-[#4a2e33] px-3 py-1.5 rounded-full font-bold">Tutup</button>
             </div>
             <div id="gallery-grid" class="flex-1 p-2 grid grid-cols-3 gap-2 overflow-y-auto content-start">
+            </div>
+        </div>
+
+        <!-- MODAL ARSIP HARIAN (FOLDER PER HARI) -->
+        <div id="archive-modal" class="absolute inset-0 cozy-sidebar-glass z-50 hidden flex flex-col">
+            <div class="cozy-glass-header px-4 pb-3 flex justify-between items-center shrink-0">
+                <h2 id="archive-modal-title" class="font-bold text-[#4a3236] text-sm truncate pr-2">Arsip Harian 📖</h2>
+                <button onclick="closeArchiveModal()" class="text-xs bg-[#f5b7c7] text-[#4a2e33] px-3 py-1.5 rounded-full font-bold shrink-0">Tutup</button>
+            </div>
+            <div id="archive-content" class="flex-1 p-3 overflow-y-auto space-y-2.5 floral-bg">
             </div>
         </div>
 
@@ -206,17 +223,40 @@
             <button onclick="cancelReply()" class="text-[#8c666d] hover:text-[#4a3236] font-bold px-2 text-sm">✕</button>
         </div>
 
+        <!-- INDIKATOR MEREKAM VOICE NOTE -->
+        <div id="recording-indicator" class="hidden px-4 py-2.5 bg-[#fce8ec]/95 border-t border-[#e87a96] justify-between items-center z-10 shrink-0 backdrop-blur-md">
+            <div class="flex items-center space-x-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-[#d94e67] animate-ping"></span>
+                <span class="text-xs font-bold text-[#b83b52]">Merekam Suara...</span>
+                <span id="recording-timer" class="text-xs font-mono font-bold text-[#4a3236] bg-white/80 px-2 py-0.5 rounded-md border border-[#ecc4cd]">00:00</span>
+            </div>
+            <div class="flex items-center space-x-2">
+                <button onclick="cancelRecording()" class="text-xs text-[#8c666d] hover:text-[#4a3236] font-bold px-2.5 py-1 rounded-full bg-white/70 border border-[#ecc4cd]">Batal</button>
+                <button onclick="stopAndSendRecording()" class="text-xs bg-gradient-to-tr from-[#f296ae] to-[#e87a96] text-white px-3.5 py-1 rounded-full font-bold shadow-xs">Kirim VN</button>
+            </div>
+        </div>
+
         <!-- PANEL INPUT CHATBOX -->
-        <div class="cozy-glass-footer px-3 pt-3 flex items-center space-x-2 z-10 shrink-0">
-            <label class="cursor-pointer text-[#a3767f] hover:text-[#d96b86] p-2 transition">
+        <div id="chat-input-bar" class="cozy-glass-footer px-3 pt-3 flex items-center space-x-1.5 z-10 shrink-0">
+            <!-- Tombol Pilih Gambar -->
+            <label class="cursor-pointer text-[#a3767f] hover:text-[#d96b86] p-2 transition shrink-0" title="Kirim Gambar">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
                 <input type="file" id="image-input" accept="image/png, image/jpeg, image/webp, image/gif" class="hidden" onchange="handleImageSelect(event)">
             </label>
 
-            <input type="text" id="message-input" placeholder="Tulis pesan manis..." class="flex-1 bg-white/90 text-[#4a3236] placeholder-[#b08b92] border border-[#ecc4cd] px-4 py-3 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#f296ae] shadow-2xs text-sm" onkeypress="handleMessageKey(event)">
+            <!-- Tombol Mikrofon Voice Note -->
+            <button id="mic-btn" onclick="toggleVoiceRecording()" class="text-[#a3767f] hover:text-[#d96b86] p-2 transition shrink-0" title="Rekam Voice Note">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                </svg>
+            </button>
+
+            <!-- Input Teks -->
+            <input type="text" id="message-input" placeholder="Tulis pesan manis..." class="flex-1 min-w-0 bg-white/90 text-[#4a3236] placeholder-[#b08b92] border border-[#ecc4cd] px-3.5 py-2.5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#f296ae] shadow-2xs text-sm" onkeypress="handleMessageKey(event)">
             
+            <!-- Tombol Kirim -->
             <button onclick="sendMessage()" class="bg-gradient-to-tr from-[#f296ae] to-[#e87a96] hover:opacity-95 text-white w-10 h-10 rounded-full flex items-center justify-center shadow-sm transition active:scale-95 shrink-0">
                 <svg viewBox="0 0 24 24" width="16" height="16" class="fill-current"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path></svg>
             </button>
@@ -236,6 +276,14 @@
         let absoluteSessionTimer = null;
         let activeReplyTo = null;
         let enteredPasscode = "";
+        let renderedMessageIds = new Set();
+
+        // Variabel Voice Note
+        let mediaRecorder = null;
+        let audioChunks = [];
+        let recordingInterval = null;
+        let recordingSeconds = 0;
+        let isRecording = false;
 
         function playIMessageSound() {
             try {
@@ -264,7 +312,7 @@
             const toast = document.getElementById('toast-modal');
             document.getElementById('toast-message').innerText = msg;
             toast.classList.remove('hidden');
-            setTimeout(() => toast.classList.add('hidden'), 3000);
+            setTimeout(() => toast.classList.add('hidden'), 3200);
         }
 
         function toggleSidebar() {
@@ -283,7 +331,7 @@
         function resetInactivityTimer() {
             clearTimeout(inactivityTimer);
             inactivityTimer = setTimeout(() => {
-                if (sessionStorage.getItem("chat_auth") === "true") {
+                if (sessionStorage.getItem("chat_auth") === "true" && !isRecording) {
                     showToast("Sesi berakhir (1 menit inaktif).");
                     setTimeout(logout, 1200);
                 }
@@ -318,7 +366,7 @@
             if (document.visibilityState === 'visible') {
                 if (sessionStorage.getItem("chat_auth") === "true") {
                     currentSender = (sessionStorage.getItem("chat_sender") || "").toLowerCase().trim();
-                    await loadMessages();
+                    await loadTodayMessages();
                     subscribeToRealtime();
                     scrollToBottom();
                 }
@@ -375,6 +423,7 @@
         }
 
         function logout() {
+            if (isRecording) cancelRecording();
             sessionStorage.removeItem("chat_auth");
             sessionStorage.removeItem("chat_sender");
             sessionStorage.clear();
@@ -385,37 +434,72 @@
             document.getElementById('password-section').classList.add('hidden');
             document.getElementById('header-title').innerText = `${currentSender} ♥`;
             await ensureRoomExists();
-            await loadMessages();
+            await loadTodayMessages();
             subscribeToRealtime();
             resetInactivityTimer();
             startAbsoluteSessionTimer();
         }
 
         async function ensureRoomExists() {
-            let { data } = await supabaseClient.from('conversations').select('id').eq('id', FIXED_ROOM_ID).single();
-            if (!data) {
-                await supabaseClient.from('conversations').insert({ id: FIXED_ROOM_ID, user1: 'alifasayang', user2: 'wildanganteng' });
+            try {
+                let { data } = await supabaseClient.from('conversations').select('id').eq('id', FIXED_ROOM_ID).single();
+                if (!data) {
+                    await supabaseClient.from('conversations').insert({ id: FIXED_ROOM_ID, user1: 'alifasayang', user2: 'wildanganteng' });
+                }
+            } catch (e) {
+                console.warn("Cek room:", e);
             }
         }
 
-        async function loadMessages() {
+        // Helper mendapatkan batas awal hari ini (Jam 00:00:00 waktu lokal) dalam ISO String
+        function getStartOfTodayISO() {
+            const now = new Date();
+            const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+            return startOfDay.toISOString();
+        }
+
+        // Memuat hanya pesan HARI INI (dimulai dari jam 00:00)
+        async function loadTodayMessages() {
+            const startOfToday = getStartOfTodayISO();
+
             const { data, error } = await supabaseClient
                 .from('messages')
                 .select('*')
                 .eq('conversation_id', FIXED_ROOM_ID)
+                .gte('created_at', startOfToday)
                 .order('created_at', { ascending: true });
 
             if (error) {
-                console.error("Gagal mengambil pesan:", error);
+                console.error("Gagal mengambil pesan hari ini:", error);
+                showToast("Gagal memuat pesan: " + error.message);
                 return;
             }
 
             const container = document.getElementById('messages-container');
             container.innerHTML = '';
+            renderedMessageIds.clear();
+
+            // Penanda awal hari di chat utama
+            const todayLabel = new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+            const dayBanner = document.createElement('div');
+            dayBanner.className = 'flex justify-center my-2';
+            dayBanner.innerHTML = `<span class="text-[10px] bg-white/80 text-[#8c666d] border border-[#ecc4cd] px-3 py-1 rounded-full font-semibold shadow-2xs">🌸 ${todayLabel} • Mulai 00:00</span>`;
+            container.appendChild(dayBanner);
+
+            if (!data || data.length === 0) {
+                const emptyNote = document.createElement('p');
+                emptyNote.id = 'empty-today-note';
+                emptyNote.className = 'text-center text-xs text-[#9c767d] mt-8 font-medium';
+                emptyNote.innerText = 'Belum ada obrolan hari ini. Mulai sapa sekarang! ✨';
+                container.appendChild(emptyNote);
+                return;
+            }
             
             for (const msg of data) {
                 try {
-                    await appendMessageToUI(msg);
+                    if (msg.content || msg.image_path || msg.audio_path) {
+                        await appendMessageToUI(msg, container);
+                    }
                 } catch (err) {
                     console.error("Error rendering pesan ID:", msg.id, err);
                 }
@@ -429,12 +513,14 @@
             container.scrollTop = container.scrollHeight;
         }
 
+        // ================= KIRIM GAMBAR =================
         async function handleImageSelect(e) {
             const file = e.target.files[0];
             if (!file) return;
 
+            showToast("Mengunggah foto...");
             const fileExt = file.name.split('.').pop();
-            const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
+            const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
             const imagePath = `${FIXED_ROOM_ID}/${currentSender}/${fileName}`;
 
             const { error: uploadError } = await supabaseClient.storage
@@ -443,6 +529,7 @@
 
             if (uploadError) {
                 showToast('Gagal mengunggah gambar: ' + uploadError.message);
+                e.target.value = '';
                 return;
             }
 
@@ -451,12 +538,16 @@
                 sender_name: currentSender,
                 image_path: imagePath,
                 reply_to_id: activeReplyTo ? activeReplyTo.id : null,
-                reply_to_text: activeReplyTo ? (activeReplyTo.content || '[Foto]') : null,
+                reply_to_text: activeReplyTo ? (activeReplyTo.content || '[Media]') : null,
                 reply_to_sender: activeReplyTo ? activeReplyTo.sender_name : null
             }).select();
 
-            if (!error && data && data.length > 0) {
-                await appendMessageToUI(data[0]);
+            if (error) {
+                showToast('Gagal mengirim foto: ' + error.message);
+            } else if (data && data.length > 0) {
+                const emptyNote = document.getElementById('empty-today-note');
+                if (emptyNote) emptyNote.remove();
+                await appendMessageToUI(data[0], document.getElementById('messages-container'));
                 scrollToBottom();
             }
 
@@ -464,6 +555,160 @@
             e.target.value = '';
         }
 
+        // ================= VOICE NOTE (ANDROID & IOS COMPATIBLE) =================
+        async function toggleVoiceRecording() {
+            if (!isRecording) {
+                await startRecording();
+            } else {
+                stopAndSendRecording();
+            }
+        }
+
+        async function startRecording() {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                showToast("Browser tidak mendukung rekaman suara atau pastikan menggunakan HTTPS.");
+                return;
+            }
+
+            audioChunks = [];
+            recordingSeconds = 0;
+            document.getElementById('recording-timer').innerText = "00:00";
+
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                
+                // Deteksi format optimal lintas platform (iPhone Safari vs Android Chrome)
+                let mimeType = '';
+                if (MediaRecorder.isTypeSupported('audio/mp4')) {
+                    mimeType = 'audio/mp4'; // iOS Safari
+                } else if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
+                    mimeType = 'audio/webm;codecs=opus'; // Android Chrome / Desktop
+                } else if (MediaRecorder.isTypeSupported('audio/webm')) {
+                    mimeType = 'audio/webm';
+                }
+
+                mediaRecorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
+                const actualMimeType = mediaRecorder.mimeType || mimeType || 'audio/webm';
+
+                mediaRecorder.ondataavailable = (event) => {
+                    if (event.data && event.data.size > 0) {
+                        audioChunks.push(event.data);
+                    }
+                };
+
+                mediaRecorder.onstop = async () => {
+                    stream.getTracks().forEach(track => track.stop());
+                    const audioBlob = new Blob(audioChunks, { type: actualMimeType });
+                    if (audioBlob.size > 0) {
+                        await uploadAndSendAudio(audioBlob, actualMimeType);
+                    }
+                };
+
+                mediaRecorder.start();
+                isRecording = true;
+
+                // Tampilkan UI perekaman
+                document.getElementById('mic-btn').classList.add('text-[#d94e67]', 'animate-pulse');
+                document.getElementById('recording-indicator').classList.remove('hidden');
+                document.getElementById('recording-indicator').classList.add('flex');
+
+                recordingInterval = setInterval(() => {
+                    recordingSeconds++;
+                    const mins = Math.floor(recordingSeconds / 60).toString().padStart(2, '0');
+                    const secs = (recordingSeconds % 60).toString().padStart(2, '0');
+                    document.getElementById('recording-timer').innerText = `${mins}:${secs}`;
+
+                    // Maksimal rekaman 2 menit
+                    if (recordingSeconds >= 120) {
+                        stopAndSendRecording();
+                    }
+                }, 1000);
+
+            } catch (err) {
+                console.error("Mic error:", err);
+                showToast("Izin mikrofon ditolak atau perangkat tidak mendukung.");
+            }
+        }
+
+        function cancelRecording() {
+            if (mediaRecorder && isRecording) {
+                mediaRecorder.onstop = () => {
+                    if (mediaRecorder.stream) {
+                        mediaRecorder.stream.getTracks().forEach(t => t.stop());
+                    }
+                };
+                mediaRecorder.stop();
+            }
+            resetRecordingUI();
+        }
+
+        function stopAndSendRecording() {
+            if (mediaRecorder && isRecording) {
+                mediaRecorder.stop();
+                resetRecordingUI();
+            }
+        }
+
+        function resetRecordingUI() {
+            isRecording = false;
+            clearInterval(recordingInterval);
+            document.getElementById('mic-btn').classList.remove('text-[#d94e67]', 'animate-pulse');
+            document.getElementById('recording-indicator').classList.remove('flex');
+            document.getElementById('recording-indicator').classList.add('hidden');
+        }
+
+        async function uploadAndSendAudio(audioBlob, mimeType) {
+            showToast("Mengirim voice note...");
+
+            const fileExt = mimeType.includes('mp4') ? 'm4a' : 'webm';
+            const fileName = `vn_${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${fileExt}`;
+            const audioPath = `${FIXED_ROOM_ID}/${currentSender}/${fileName}`;
+
+            const { error: uploadError } = await supabaseClient.storage
+                .from('chat-audios')
+                .upload(audioPath, audioBlob, {
+                    contentType: mimeType,
+                    upsert: false
+                });
+
+            if (uploadError) {
+                showToast("Gagal upload VN: " + uploadError.message);
+                return;
+            }
+
+            const { data: publicUrlData } = supabaseClient.storage
+                .from('chat-audios')
+                .getPublicUrl(audioPath);
+
+            const publicUrl = publicUrlData.publicUrl;
+
+            const { data, error } = await supabaseClient
+                .from('messages')
+                .insert({
+                    conversation_id: FIXED_ROOM_ID,
+                    sender_name: currentSender,
+                    content: "[Voice Note]",
+                    audio_path: publicUrl,
+                    reply_to_id: activeReplyTo ? activeReplyTo.id : null,
+                    reply_to_text: activeReplyTo ? (activeReplyTo.content || '[Media]') : null,
+                    reply_to_sender: activeReplyTo ? activeReplyTo.sender_name : null
+                })
+                .select();
+
+            if (error) {
+                showToast("Gagal menyimpan VN: " + error.message);
+            } else {
+                cancelReply();
+                if (data && data.length > 0) {
+                    const emptyNote = document.getElementById('empty-today-note');
+                    if (emptyNote) emptyNote.remove();
+                    await appendMessageToUI(data[0], document.getElementById('messages-container'));
+                    scrollToBottom();
+                }
+            }
+        }
+
+        // ================= KIRIM PESAN TEKS =================
         async function sendMessage() {
             const input = document.getElementById('message-input');
             const content = input.value.trim();
@@ -477,7 +722,7 @@
                     sender_name: currentSender, 
                     content: content,
                     reply_to_id: activeReplyTo ? activeReplyTo.id : null,
-                    reply_to_text: activeReplyTo ? (activeReplyTo.content || '[Foto]') : null,
+                    reply_to_text: activeReplyTo ? (activeReplyTo.content || '[Media]') : null,
                     reply_to_sender: activeReplyTo ? activeReplyTo.sender_name : null
                 })
                 .select();
@@ -489,7 +734,9 @@
                 cancelReply();
 
                 if (data && data.length > 0) {
-                    await appendMessageToUI(data[0]);
+                    const emptyNote = document.getElementById('empty-today-note');
+                    if (emptyNote) emptyNote.remove();
+                    await appendMessageToUI(data[0], document.getElementById('messages-container'));
                     scrollToBottom();
                 }
             }
@@ -519,11 +766,18 @@
                     table: 'messages',
                     filter: `conversation_id=eq.${FIXED_ROOM_ID}`
                 }, async payload => {
-                    const sender = (payload.new.sender_name || "").toLowerCase().trim();
-                    if (sender !== currentSender.toLowerCase().trim()) {
+                    const newMsg = payload.new;
+                    const sender = (newMsg.sender_name || "").toLowerCase().trim();
+                    
+                    // Pastikan pesan berasal dari hari ini (mulai 00:00)
+                    const isToday = new Date(newMsg.created_at) >= new Date(getStartOfTodayISO());
+
+                    if (sender !== currentSender.toLowerCase().trim() && isToday) {
                         try {
+                            const emptyNote = document.getElementById('empty-today-note');
+                            if (emptyNote) emptyNote.remove();
                             playIMessageSound();
-                            await appendMessageToUI(payload.new);
+                            await appendMessageToUI(newMsg, document.getElementById('messages-container'));
                             scrollToBottom();
                         } catch (err) {
                             console.error("Error realtime message render:", err);
@@ -533,8 +787,15 @@
                 .subscribe();
         }
 
-        async function appendMessageToUI(msg) {
-            const container = document.getElementById('messages-container');
+        // Render Bubble Pesan (Bisa dipakai di Chat Utama maupun Arsip Harian)
+        async function appendMessageToUI(msg, targetContainer, isArchiveMode = false) {
+            if (!isArchiveMode && msg.id && renderedMessageIds.has(msg.id)) {
+                return;
+            }
+            if (!isArchiveMode && msg.id) {
+                renderedMessageIds.add(msg.id);
+            }
+
             const msgSender = (msg.sender_name || "").toLowerCase().trim();
             const isLeft = (msgSender !== currentSender.toLowerCase().trim());
 
@@ -542,7 +803,7 @@
             wrapper.className = `flex w-full mb-1.5 group relative ${isLeft ? 'justify-start' : 'justify-end'}`;
 
             const bubble = document.createElement('div');
-            bubble.className = `max-w-[80%] px-3.5 py-2.5 rounded-2xl text-sm relative ${
+            bubble.className = `max-w-[82%] px-3.5 py-2.5 rounded-2xl text-sm relative ${
                 isLeft 
                   ? 'bubble-left rounded-tl-xs' 
                   : 'bubble-right rounded-tr-xs'
@@ -570,28 +831,48 @@
                 }
             }
 
+            let audioHtml = '';
+            if (msg.audio_path) {
+                audioHtml = `
+                    <div class="mb-1.5 min-w-[210px] max-w-full">
+                        <audio controls preload="metadata" class="w-full h-9 rounded-xl">
+                            <source src="${msg.audio_path}" type="audio/mp4">
+                            <source src="${msg.audio_path}" type="audio/webm">
+                            Browser tidak mendukung audio.
+                        </audio>
+                    </div>
+                `;
+            }
+
             const timeStr = new Date(msg.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            const showText = msg.content && msg.content !== "[Voice Note]";
 
             bubble.innerHTML = `
                 ${replyHtml}
                 ${imageHtml}
-                ${msg.content ? `<p class="break-words pr-10 leading-relaxed font-normal">${escapeHtml(msg.content)}</p>` : ''}
+                ${audioHtml}
+                ${showText ? `<p class="break-words ${!isArchiveMode ? 'pr-6' : ''} leading-relaxed font-normal">${escapeHtml(msg.content)}</p>` : ''}
                 <span class="text-[9px] text-[#8c666d] float-right ml-2 mt-1 select-none font-medium">${timeStr} ${!isLeft ? '♥' : ''}</span>
             `;
 
-            const menuBtn = document.createElement('button');
-            menuBtn.className = `absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-100 bg-white/60 text-[#6e4a50] hover:scale-110 rounded-full p-1 transition shadow-2xs`;
-            menuBtn.innerHTML = `<svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>`;
-            menuBtn.onclick = (e) => {
-                e.stopPropagation();
-                setReply(msg.id, msg.sender_name, msg.content || '[Foto]');
-            };
+            if (!isArchiveMode) {
+                const menuBtn = document.createElement('button');
+                menuBtn.className = `absolute top-1.5 right-1.5 opacity-60 sm:opacity-0 group-hover:opacity-100 bg-white/70 text-[#6e4a50] hover:scale-110 rounded-full p-1 transition shadow-2xs`;
+                menuBtn.title = "Balas pesan";
+                menuBtn.innerHTML = `<svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>`;
+                menuBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    const previewLabel = msg.audio_path ? '[Voice Note]' : (msg.image_path ? '[Foto]' : msg.content);
+                    setReply(msg.id, msg.sender_name, previewLabel);
+                };
+                bubble.appendChild(menuBtn);
+            }
 
-            bubble.appendChild(menuBtn);
             wrapper.appendChild(bubble);
-            container.appendChild(wrapper);
+            targetContainer.appendChild(wrapper);
         }
 
+        // ================= GALERI FOTO =================
         async function openGallery() {
             toggleSidebar();
             const modal = document.getElementById('gallery-modal');
@@ -599,7 +880,7 @@
             grid.innerHTML = '<p class="col-span-3 text-center text-xs text-[#8c666d] mt-10 font-bold">Memuat galeri...</p>';
             modal.classList.remove('hidden');
 
-            const { data, error } = await supabaseClient
+            const { data } = await supabaseClient
                 .from('messages')
                 .select('image_path, created_at')
                 .eq('conversation_id', FIXED_ROOM_ID)
@@ -631,6 +912,117 @@
             document.getElementById('gallery-modal').classList.add('hidden');
         }
 
+        // ================= ARSIP HARIAN (FOLDER PER HARI MULAI 00:00) =================
+        async function openArchiveMenu(fromSidebar = true) {
+            if (fromSidebar) toggleSidebar();
+            const modal = document.getElementById('archive-modal');
+            const content = document.getElementById('archive-content');
+            document.getElementById('archive-modal-title').innerText = "Arsip Harian 📖";
+            
+            content.innerHTML = '<p class="text-center text-xs text-[#8c666d] mt-10 font-bold">Memuat arsip per hari...</p>';
+            modal.classList.remove('hidden');
+
+            const { data, error } = await supabaseClient
+                .from('messages')
+                .select('*')
+                .eq('conversation_id', FIXED_ROOM_ID)
+                .order('created_at', { ascending: false });
+
+            if (error || !data || data.length === 0) {
+                content.innerHTML = '<p class="text-center text-xs text-[#8c666d] mt-10 font-bold">Belum ada riwayat chat untuk diarsip.</p>';
+                return;
+            }
+
+            // Kelompokkan pesan per tanggal lokal (00:00 - 23:59)
+            const groupedByDate = {};
+            data.forEach(msg => {
+                const dateObj = new Date(msg.created_at);
+                // Kunci pengelompokan YYYY-MM-DD agar akurat per hari
+                const rawDateKey = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')}`;
+                const displayDate = dateObj.toLocaleDateString('id-ID', {
+                    weekday: 'long',
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric'
+                });
+                
+                if (!groupedByDate[rawDateKey]) {
+                    groupedByDate[rawDateKey] = {
+                        title: displayDate,
+                        messages: []
+                    };
+                }
+                groupedByDate[rawDateKey].messages.push(msg);
+            });
+
+            content.innerHTML = '';
+            const todayRawKey = (() => {
+                const d = new Date();
+                return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+            })();
+            
+            for (const [rawKey, group] of Object.entries(groupedByDate)) {
+                const isTodayFolder = (rawKey === todayRawKey);
+                const folderBtn = document.createElement('div');
+                folderBtn.className = 'bg-white/85 border border-[#ecc4cd] p-3.5 rounded-2xl shadow-2xs cursor-pointer hover:bg-[#fce3e8] transition flex justify-between items-center';
+                folderBtn.innerHTML = `
+                    <div class="flex items-center space-x-3 overflow-hidden">
+                        <span class="text-2xl shrink-0">${isTodayFolder ? '📂' : '📁'}</span>
+                        <div class="truncate">
+                            <div class="flex items-center space-x-1.5">
+                                <h3 class="font-bold text-[#4a3236] text-xs sm:text-sm truncate">${group.title}</h3>
+                                ${isTodayFolder ? '<span class="text-[9px] bg-[#f5b7c7] text-[#4a2e33] px-1.5 py-0.5 rounded-full font-bold shrink-0">Hari Ini</span>' : ''}
+                            </div>
+                            <p class="text-[10px] text-[#8c666d] font-medium">${group.messages.length} pesan • Mulai 00:00</p>
+                        </div>
+                    </div>
+                    <span class="text-xs text-[#b83b52] font-bold shrink-0 ml-2">Buka →</span>
+                `;
+                
+                folderBtn.onclick = () => showDailyArchiveMessages(group.title, group.messages);
+                content.appendChild(folderBtn);
+            }
+        }
+
+        async function showDailyArchiveMessages(dateTitle, messages) {
+            document.getElementById('archive-modal-title').innerText = dateTitle;
+            const content = document.getElementById('archive-content');
+            content.innerHTML = '';
+
+            // Tombol kembali ke daftar folder
+            const backBtn = document.createElement('button');
+            backBtn.className = 'w-full mb-2 py-2.5 bg-white/90 hover:bg-[#fce3e8] border border-[#ecc4cd] text-[#4a3236] rounded-xl font-bold text-xs shadow-2xs transition sticky top-0 z-10 backdrop-blur-md';
+            backBtn.innerText = '← Kembali ke Daftar Folder Tanggal';
+            backBtn.onclick = () => openArchiveMenu(false);
+            content.appendChild(backBtn);
+
+            // Penanda awal hari 00:00
+            const startBadge = document.createElement('div');
+            startBadge.className = 'flex justify-center my-2';
+            startBadge.innerHTML = `<span class="text-[10px] bg-white/80 text-[#8c666d] border border-[#ecc4cd] px-3 py-1 rounded-full font-semibold">🕰️ Awal Percakapan • 00:00</span>`;
+            content.appendChild(startBadge);
+
+            // Urutkan kronologis dari jam 00:00 pagi hingga malam
+            const sortedMessages = [...messages].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+
+            const chatWrapper = document.createElement('div');
+            chatWrapper.className = 'space-y-3 pb-4';
+            content.appendChild(chatWrapper);
+
+            for (const msg of sortedMessages) {
+                try {
+                    await appendMessageToUI(msg, chatWrapper, true);
+                } catch (e) {
+                    console.error("Gagal render arsip pesan:", e);
+                }
+            }
+        }
+
+        function closeArchiveModal() {
+            document.getElementById('archive-modal').classList.add('hidden');
+        }
+
+        // ================= MODAL GAMBAR & HELPERS =================
         function openImageModal(url) {
             const modal = document.getElementById('image-modal');
             const modalImg = document.getElementById('modal-img');

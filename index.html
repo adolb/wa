@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="id" class="dark">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>iMac Style Chat</title>
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <title>Cozy Pastel Chat</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
@@ -20,33 +20,65 @@
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
         }
 
-        .imac-window {
-            background: rgba(22, 22, 28, 0.82);
-            backdrop-filter: blur(50px) saturate(200%);
-            -webkit-backdrop-filter: blur(50px) saturate(200%);
-            border: 1px solid rgba(255, 255, 255, 0.14);
-            box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+        /* Latar Belakang Pastel & Floral Soft */
+        .cozy-window {
+            background: linear-gradient(160deg, #fff6f7 0%, #fce8ec 50%, #f9e1e6 100%);
+            border: 1px solid rgba(235, 175, 190, 0.45);
+            box-shadow: 0 25px 50px -12px rgba(180, 110, 125, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+            position: relative;
         }
 
-        .imac-glass-header {
-            background: rgba(20, 20, 25, 0.88);
-            backdrop-filter: blur(40px) saturate(200%);
-            -webkit-backdrop-filter: blur(40px) saturate(200%);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        /* Motif Kelopak & Bunga Halus di Latar Chat */
+        .floral-bg {
+            background-image: 
+                radial-gradient(circle at 18% 25%, rgba(255, 192, 203, 0.28) 0%, transparent 45%),
+                radial-gradient(circle at 82% 72%, rgba(247, 202, 201, 0.35) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, rgba(255, 245, 240, 0.6) 0%, transparent 70%);
+        }
+
+        /* Header & Input Bar Frosted Pastel Glass */
+        .cozy-glass-header {
+            background: rgba(255, 248, 249, 0.78);
+            backdrop-filter: blur(28px) saturate(180%);
+            -webkit-backdrop-filter: blur(28px) saturate(180%);
+            border-bottom: 1px solid rgba(230, 175, 188, 0.35);
             padding-top: calc(0.75rem + env(safe-area-inset-top, 0px));
         }
 
-        .imac-sidebar-glass {
-            background: rgba(20, 20, 25, 0.95);
-            backdrop-filter: blur(60px) saturate(200%);
-            -webkit-backdrop-filter: blur(60px) saturate(200%);
-            border-right: 1px solid rgba(255, 255, 255, 0.1);
+        .cozy-glass-footer {
+            background: rgba(255, 248, 249, 0.82);
+            backdrop-filter: blur(28px) saturate(180%);
+            -webkit-backdrop-filter: blur(28px) saturate(180%);
+            border-top: 1px solid rgba(230, 175, 188, 0.35);
+            padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
         }
 
-        ::-webkit-scrollbar { width: 6px; }
+        .cozy-sidebar-glass {
+            background: rgba(255, 244, 246, 0.96);
+            backdrop-filter: blur(40px) saturate(180%);
+            -webkit-backdrop-filter: blur(40px) saturate(180%);
+            border-right: 1px solid rgba(230, 175, 188, 0.4);
+        }
+
+        /* Bubble Chat Kiri (Krem Hangat) & Kanan (Pink Pastel) */
+        .bubble-left {
+            background: rgba(255, 253, 251, 0.92);
+            color: #4a3538;
+            border: 1px solid rgba(235, 190, 200, 0.45);
+            box-shadow: 0 4px 12px rgba(185, 130, 140, 0.08);
+        }
+
+        .bubble-right {
+            background: linear-gradient(135deg, #fbd1dc 0%, #f5b7c7 100%);
+            color: #4a2e33;
+            border: 1px solid rgba(238, 160, 180, 0.55);
+            box-shadow: 0 4px 14px rgba(225, 135, 155, 0.22);
+        }
+
+        ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.25);
+            background: rgba(220, 155, 170, 0.45);
             border-radius: 10px;
         }
 
@@ -55,130 +87,137 @@
         }
     </style>
 </head>
-<body class="bg-gradient-to-tr from-slate-950 via-purple-950 to-slate-900 h-[100dvh] w-full flex justify-center items-center p-0 sm:p-4">
+<body class="bg-gradient-to-tr from-[#f7dce2] via-[#fdf2f4] to-[#f4ced7] h-[100dvh] w-full flex justify-center items-center p-0 sm:p-4">
 
-    <div id="app" class="w-full h-[100dvh] sm:h-[92vh] sm:max-w-md sm:rounded-3xl flex flex-col overflow-hidden relative imac-window transition-all duration-300">
+    <div id="app" class="w-full h-[100dvh] sm:h-[92vh] sm:max-w-md sm:rounded-3xl flex flex-col overflow-hidden relative cozy-window transition-all duration-300">
         
         <!-- ALERT TOAST -->
-        <div id="toast-modal" class="hidden absolute top-16 left-1/2 -translate-x-1/2 z-50 bg-white/95 text-slate-900 text-xs font-semibold px-4 py-2.5 rounded-full shadow-2xl backdrop-blur-xl transition-all">
+        <div id="toast-modal" class="hidden absolute top-16 left-1/2 -translate-x-1/2 z-50 bg-[#5a3b40] text-[#fff6f8] text-xs font-semibold px-4 py-2.5 rounded-full shadow-lg backdrop-blur-xl transition-all">
             <span id="toast-message"></span>
         </div>
 
-        <!-- HALAMAN LOGIN PASSCODE iPHONE -->
-        <div id="password-section" class="absolute inset-0 imac-sidebar-glass z-50 p-6 flex flex-col justify-center items-center space-y-6">
+        <!-- HALAMAN LOGIN PASSCODE PASTEL -->
+        <div id="password-section" class="absolute inset-0 cozy-sidebar-glass z-50 p-6 flex flex-col justify-center items-center space-y-6">
+            <div class="w-16 h-16 bg-gradient-to-tr from-[#f7b2c4] to-[#f296ae] rounded-2xl flex items-center justify-center text-white text-3xl shadow-md border border-white/60 mb-1">🌸</div>
             <div class="text-center space-y-1">
-                <h2 class="text-lg font-bold text-white tracking-tight">Masukkan Passcode</h2>
-                <p class="text-xs text-slate-400 font-medium">Masukkan 4 digit sandi untuk masuk</p>
+                <h2 class="text-lg font-bold text-[#4a3236] tracking-tight">Masukkan Passcode</h2>
+                <p class="text-xs text-[#8c666d] font-medium">Masukkan 4 digit sandi untuk masuk</p>
             </div>
 
             <!-- Indikator Titik Passcode -->
             <div class="flex space-x-4 my-2">
-                <div id="dot-1" class="w-3.5 h-3.5 rounded-full border border-white/40 transition-all duration-200"></div>
-                <div id="dot-2" class="w-3.5 h-3.5 rounded-full border border-white/40 transition-all duration-200"></div>
-                <div id="dot-3" class="w-3.5 h-3.5 rounded-full border border-white/40 transition-all duration-200"></div>
-                <div id="dot-4" class="w-3.5 h-3.5 rounded-full border border-white/40 transition-all duration-200"></div>
+                <div id="dot-1" class="w-3.5 h-3.5 rounded-full border border-[#d69aa6] transition-all duration-200"></div>
+                <div id="dot-2" class="w-3.5 h-3.5 rounded-full border border-[#d69aa6] transition-all duration-200"></div>
+                <div id="dot-3" class="w-3.5 h-3.5 rounded-full border border-[#d69aa6] transition-all duration-200"></div>
+                <div id="dot-4" class="w-3.5 h-3.5 rounded-full border border-[#d69aa6] transition-all duration-200"></div>
             </div>
 
-            <p id="password-error" class="text-red-400 text-xs text-center font-semibold h-4"></p>
+            <p id="password-error" class="text-[#d94e67] text-xs text-center font-semibold h-4"></p>
 
-            <!-- Keypad Angka ala iPhone -->
+            <!-- Keypad Angka Pastel -->
             <div class="grid grid-cols-3 gap-4 max-w-[260px] w-full">
-                <button onclick="pressKey('1')" class="h-16 w-16 mx-auto rounded-full bg-white/10 hover:bg-white/20 active:bg-white/30 text-white text-2xl font-semibold flex items-center justify-center transition select-none">1</button>
-                <button onclick="pressKey('2')" class="h-16 w-16 mx-auto rounded-full bg-white/10 hover:bg-white/20 active:bg-white/30 text-white text-2xl font-semibold flex items-center justify-center transition select-none">2</button>
-                <button onclick="pressKey('3')" class="h-16 w-16 mx-auto rounded-full bg-white/10 hover:bg-white/20 active:bg-white/30 text-white text-2xl font-semibold flex items-center justify-center transition select-none">3</button>
-                <button onclick="pressKey('4')" class="h-16 w-16 mx-auto rounded-full bg-white/10 hover:bg-white/20 active:bg-white/30 text-white text-2xl font-semibold flex items-center justify-center transition select-none">4</button>
-                <button onclick="pressKey('5')" class="h-16 w-16 mx-auto rounded-full bg-white/10 hover:bg-white/20 active:bg-white/30 text-white text-2xl font-semibold flex items-center justify-center transition select-none">5</button>
-                <button onclick="pressKey('6')" class="h-16 w-16 mx-auto rounded-full bg-white/10 hover:bg-white/20 active:bg-white/30 text-white text-2xl font-semibold flex items-center justify-center transition select-none">6</button>
-                <button onclick="pressKey('7')" class="h-16 w-16 mx-auto rounded-full bg-white/10 hover:bg-white/20 active:bg-white/30 text-white text-2xl font-semibold flex items-center justify-center transition select-none">7</button>
-                <button onclick="pressKey('8')" class="h-16 w-16 mx-auto rounded-full bg-white/10 hover:bg-white/20 active:bg-white/30 text-white text-2xl font-semibold flex items-center justify-center transition select-none">8</button>
-                <button onclick="pressKey('9')" class="h-16 w-16 mx-auto rounded-full bg-white/10 hover:bg-white/20 active:bg-white/30 text-white text-2xl font-semibold flex items-center justify-center transition select-none">9</button>
+                <button onclick="pressKey('1')" class="h-16 w-16 mx-auto rounded-full bg-white/80 hover:bg-[#fce3e8] active:bg-[#f7c8d3] text-[#4a3236] border border-[#ecc4cd] text-2xl font-semibold flex items-center justify-center transition select-none shadow-xs">1</button>
+                <button onclick="pressKey('2')" class="h-16 w-16 mx-auto rounded-full bg-white/80 hover:bg-[#fce3e8] active:bg-[#f7c8d3] text-[#4a3236] border border-[#ecc4cd] text-2xl font-semibold flex items-center justify-center transition select-none shadow-xs">2</button>
+                <button onclick="pressKey('3')" class="h-16 w-16 mx-auto rounded-full bg-white/80 hover:bg-[#fce3e8] active:bg-[#f7c8d3] text-[#4a3236] border border-[#ecc4cd] text-2xl font-semibold flex items-center justify-center transition select-none shadow-xs">3</button>
+                <button onclick="pressKey('4')" class="h-16 w-16 mx-auto rounded-full bg-white/80 hover:bg-[#fce3e8] active:bg-[#f7c8d3] text-[#4a3236] border border-[#ecc4cd] text-2xl font-semibold flex items-center justify-center transition select-none shadow-xs">4</button>
+                <button onclick="pressKey('5')" class="h-16 w-16 mx-auto rounded-full bg-white/80 hover:bg-[#fce3e8] active:bg-[#f7c8d3] text-[#4a3236] border border-[#ecc4cd] text-2xl font-semibold flex items-center justify-center transition select-none shadow-xs">5</button>
+                <button onclick="pressKey('6')" class="h-16 w-16 mx-auto rounded-full bg-white/80 hover:bg-[#fce3e8] active:bg-[#f7c8d3] text-[#4a3236] border border-[#ecc4cd] text-2xl font-semibold flex items-center justify-center transition select-none shadow-xs">6</button>
+                <button onclick="pressKey('7')" class="h-16 w-16 mx-auto rounded-full bg-white/80 hover:bg-[#fce3e8] active:bg-[#f7c8d3] text-[#4a3236] border border-[#ecc4cd] text-2xl font-semibold flex items-center justify-center transition select-none shadow-xs">7</button>
+                <button onclick="pressKey('8')" class="h-16 w-16 mx-auto rounded-full bg-white/80 hover:bg-[#fce3e8] active:bg-[#f7c8d3] text-[#4a3236] border border-[#ecc4cd] text-2xl font-semibold flex items-center justify-center transition select-none shadow-xs">8</button>
+                <button onclick="pressKey('9')" class="h-16 w-16 mx-auto rounded-full bg-white/80 hover:bg-[#fce3e8] active:bg-[#f7c8d3] text-[#4a3236] border border-[#ecc4cd] text-2xl font-semibold flex items-center justify-center transition select-none shadow-xs">9</button>
                 <div></div>
-                <button onclick="pressKey('0')" class="h-16 w-16 mx-auto rounded-full bg-white/10 hover:bg-white/20 active:bg-white/30 text-white text-2xl font-semibold flex items-center justify-center transition select-none">0</button>
-                <button onclick="deleteKey()" class="h-16 w-16 mx-auto rounded-full flex items-center justify-center text-slate-300 hover:text-white active:scale-95 transition select-none text-xl font-bold">⌫</button>
+                <button onclick="pressKey('0')" class="h-16 w-16 mx-auto rounded-full bg-white/80 hover:bg-[#fce3e8] active:bg-[#f7c8d3] text-[#4a3236] border border-[#ecc4cd] text-2xl font-semibold flex items-center justify-center transition select-none shadow-xs">0</button>
+                <button onclick="deleteKey()" class="h-16 w-16 mx-auto rounded-full flex items-center justify-center text-[#8c666d] hover:text-[#4a3236] active:scale-95 transition select-none text-xl font-bold">⌫</button>
             </div>
         </div>
 
         <!-- SIDEBAR DRAWER -->
-        <div id="sidebar" class="absolute inset-y-0 left-0 w-72 imac-sidebar-glass z-40 transform -translate-x-full flex flex-col shadow-2xl">
-            <div class="p-5 border-b border-zinc-800 flex justify-between items-center" style="padding-top: calc(1.25rem + env(safe-area-inset-top, 0px));">
+        <div id="sidebar" class="absolute inset-y-0 left-0 w-72 cozy-sidebar-glass z-40 transform -translate-x-full flex flex-col shadow-xl">
+            <div class="p-5 border-b border-[#ecc4cd]/50 flex justify-between items-center" style="padding-top: calc(1.25rem + env(safe-area-inset-top, 0px));">
                 <div class="flex items-center space-x-2">
-                    <span class="w-3 h-3 rounded-full bg-red-500 inline-block shadow-sm"></span>
-                    <span class="w-3 h-3 rounded-full bg-yellow-500 inline-block shadow-sm"></span>
-                    <span class="w-3 h-3 rounded-full bg-green-500 inline-block shadow-sm"></span>
+                    <span class="text-base">🌸</span>
+                    <span class="text-xs font-bold text-[#6e4a50]">Menu Ruang</span>
                 </div>
-                <button onclick="toggleSidebar()" class="text-slate-300 font-bold text-sm hover:opacity-75 p-1">✕</button>
+                <button onclick="toggleSidebar()" class="text-[#8c666d] font-bold text-sm hover:opacity-75 p-1">✕</button>
             </div>
             
             <div class="flex-1 p-4 space-y-2 overflow-y-auto">
-                <button onclick="openGallery()" class="w-full flex items-center space-x-3 p-3.5 rounded-2xl bg-white/10 hover:bg-white/20 text-white text-sm font-semibold shadow-sm transition border border-white/5">
-                    <span class="text-xl">🖼️</span>
-                    <span class="text-white font-semibold">Galeri Media</span>
+                <button onclick="openGallery()" class="w-full flex items-center space-x-3 p-3.5 rounded-2xl bg-white/80 hover:bg-[#fce3e8] text-[#4a3236] text-sm font-semibold shadow-xs transition border border-[#ecc4cd]/60">
+                    <span class="text-xl">🌷</span>
+                    <span class="font-semibold">Galeri Kenangan</span>
                 </button>
             </div>
 
-            <div class="p-4 border-t border-zinc-800">
-                <button onclick="logout()" class="w-full bg-red-900/20 text-red-400 p-3.5 rounded-2xl font-bold text-sm transition border border-red-900/30">Keluar</button>
+            <div class="p-4 border-t border-[#ecc4cd]/50">
+                <button onclick="logout()" class="w-full bg-[#fae1e6] hover:bg-[#f5ccd4] text-[#b83b52] p-3.5 rounded-2xl font-bold text-sm transition border border-[#ebaeb9]">Keluar</button>
             </div>
         </div>
-        <div id="sidebar-overlay" class="absolute inset-0 bg-black/50 z-30 hidden backdrop-blur-xs transition-opacity" onclick="toggleSidebar()"></div>
+        <div id="sidebar-overlay" class="absolute inset-0 bg-[#4a2e33]/25 z-30 hidden backdrop-blur-xs transition-opacity" onclick="toggleSidebar()"></div>
 
-        <!-- HEADER MAC STYLE -->
-        <div class="imac-glass-header px-4 pb-3 flex justify-between items-center z-10 shrink-0">
+        <!-- HEADER COZY PASTEL -->
+        <div class="cozy-glass-header px-4 pb-3 flex justify-between items-center z-10 shrink-0">
             <div class="flex items-center space-x-3">
-                <button onclick="toggleSidebar()" class="w-8 h-8 flex items-center justify-center text-slate-200 hover:bg-white/10 rounded-full transition">
+                <button onclick="toggleSidebar()" class="w-8 h-8 flex items-center justify-center text-[#6e4a50] hover:bg-[#f7dce2]/60 rounded-full transition">
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h16"/></svg>
                 </button>
-                <div class="w-9 h-9 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-xs shadow-md">💬</div>
+                <div class="w-9 h-9 bg-gradient-to-tr from-[#f7b2c4] to-[#f296ae] rounded-full flex items-center justify-center text-white font-bold text-sm shadow-xs border border-white">🌸</div>
                 <div>
-                    <h1 id="header-title" class="font-bold text-sm text-white tracking-tight">Chat</h1>
-                    <span class="text-[10px] text-emerald-400 font-semibold flex items-center gap-1">
-                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Online
+                    <h1 id="header-title" class="font-bold text-sm text-[#4a3236] tracking-tight">Chat</h1>
+                    <span class="text-[10px] text-[#7ca882] font-semibold flex items-center gap-1">
+                        <span class="w-1.5 h-1.5 rounded-full bg-[#7ca882] animate-pulse"></span> Online ♥
                     </span>
                 </div>
             </div>
-            <button onclick="logout()" class="text-xs bg-white/10 hover:bg-white/20 px-3.5 py-1.5 rounded-full text-slate-100 font-bold active:scale-95 transition shadow-xs">Keluar</button>
+            <button onclick="logout()" class="text-xs bg-white/80 hover:bg-[#fce3e8] border border-[#ecc4cd] px-3.5 py-1.5 rounded-full text-[#6e4a50] font-bold active:scale-95 transition shadow-2xs">Keluar</button>
+        </div>
+
+        <!-- DEKORASI BUNGA HALUS DI BACKGROUND -->
+        <div class="pointer-events-none absolute inset-0 overflow-hidden z-0 opacity-35">
+            <div class="absolute top-20 right-4 text-4xl rotate-12 select-none">🌸</div>
+            <div class="absolute bottom-28 left-4 text-4xl -rotate-12 select-none">🌷</div>
+            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-7xl opacity-30 select-none">🎀</div>
         </div>
 
         <!-- KOTAK PESAN -->
-        <div id="messages-container" class="flex-1 p-4 overflow-y-auto space-y-3 bg-transparent">
+        <div id="messages-container" class="flex-1 p-4 overflow-y-auto space-y-3 floral-bg relative z-1">
         </div>
 
         <!-- GALERI MODAL -->
-        <div id="gallery-modal" class="absolute inset-0 imac-sidebar-glass z-50 hidden flex flex-col">
-            <div class="imac-glass-header px-4 pb-3 flex justify-between items-center shrink-0">
-                <h2 class="font-bold text-white text-sm">Galeri Foto</h2>
-                <button onclick="closeGallery()" class="text-xs bg-zinc-700 text-white px-3 py-1.5 rounded-full font-bold">Tutup</button>
+        <div id="gallery-modal" class="absolute inset-0 cozy-sidebar-glass z-50 hidden flex flex-col">
+            <div class="cozy-glass-header px-4 pb-3 flex justify-between items-center shrink-0">
+                <h2 class="font-bold text-[#4a3236] text-sm">Galeri Foto 🌸</h2>
+                <button onclick="closeGallery()" class="text-xs bg-[#f5b7c7] text-[#4a2e33] px-3 py-1.5 rounded-full font-bold">Tutup</button>
             </div>
-            <div id="gallery-grid" class="flex-1 p-1.5 grid grid-cols-3 gap-1.5 overflow-y-auto content-start">
+            <div id="gallery-grid" class="flex-1 p-2 grid grid-cols-3 gap-2 overflow-y-auto content-start">
             </div>
         </div>
 
         <!-- MODAL GAMBAR BESAR -->
-        <div id="image-modal" class="fixed inset-0 bg-black/85 backdrop-blur-xl z-50 hidden flex items-center justify-center p-4 cursor-pointer" onclick="closeImageModal()">
-            <img id="modal-img" class="max-w-full max-h-full rounded-2xl shadow-2xl object-contain">
+        <div id="image-modal" class="fixed inset-0 bg-[#3a2428]/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4 cursor-pointer" onclick="closeImageModal()">
+            <img id="modal-img" class="max-w-full max-h-full rounded-2xl shadow-2xl object-contain border-2 border-white/60">
         </div>
 
         <!-- PANEL REPLY PREVIEW -->
-        <div id="reply-preview-container" class="hidden px-4 py-2 bg-zinc-800/90 border-t border-white/10 flex justify-between items-center text-xs z-10 shrink-0 backdrop-blur-xl shadow-md">
-            <div class="flex flex-col border-l-3 border-blue-500 pl-2.5 overflow-hidden">
-                <span id="reply-preview-sender" class="font-bold text-blue-400"></span>
-                <span id="reply-preview-text" class="text-slate-200 truncate font-medium"></span>
+        <div id="reply-preview-container" class="hidden px-4 py-2 bg-[#fff5f7]/95 border-t border-[#ecc4cd] flex justify-between items-center text-xs z-10 shrink-0 backdrop-blur-md">
+            <div class="flex flex-col border-l-3 border-[#ea8ca3] pl-2.5 overflow-hidden">
+                <span id="reply-preview-sender" class="font-bold text-[#c95b76]"></span>
+                <span id="reply-preview-text" class="text-[#6e4a50] truncate font-medium"></span>
             </div>
-            <button onclick="cancelReply()" class="text-slate-400 hover:text-white font-bold px-2 text-sm">✕</button>
+            <button onclick="cancelReply()" class="text-[#8c666d] hover:text-[#4a3236] font-bold px-2 text-sm">✕</button>
         </div>
 
         <!-- PANEL INPUT CHATBOX -->
-        <div class="imac-glass-header p-3 flex items-center space-x-2 z-10 shrink-0 border-t border-white/10 shadow-lg">
-            <label class="cursor-pointer text-slate-300 hover:text-blue-500 p-2 transition">
+        <div class="cozy-glass-footer px-3 pt-3 flex items-center space-x-2 z-10 shrink-0">
+            <label class="cursor-pointer text-[#a3767f] hover:text-[#d96b86] p-2 transition">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
                 <input type="file" id="image-input" accept="image/png, image/jpeg, image/webp, image/gif" class="hidden" onchange="handleImageSelect(event)">
             </label>
 
-            <input type="text" id="message-input" placeholder="Tulis pesan..." class="flex-1 bg-zinc-800 text-white placeholder-slate-400 border border-zinc-700 p-3.5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-inner" onkeypress="handleMessageKey(event)">
+            <input type="text" id="message-input" placeholder="Tulis pesan manis..." class="flex-1 bg-white/90 text-[#4a3236] placeholder-[#b08b92] border border-[#ecc4cd] px-4 py-3 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#f296ae] shadow-2xs text-sm" onkeypress="handleMessageKey(event)">
             
-            <button onclick="sendMessage()" class="bg-blue-600 hover:bg-blue-500 text-white w-9 h-9 rounded-full flex items-center justify-center shadow-md hover:shadow-blue-500/30 transition active:scale-95 shrink-0">
+            <button onclick="sendMessage()" class="bg-gradient-to-tr from-[#f296ae] to-[#e87a96] hover:opacity-95 text-white w-10 h-10 rounded-full flex items-center justify-center shadow-sm transition active:scale-95 shrink-0">
                 <svg viewBox="0 0 24 24" width="16" height="16" class="fill-current"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path></svg>
             </button>
         </div>
@@ -274,6 +313,18 @@
             }
         };
 
+        // OTOMATIS RECONNECT & REFRESH KETIKA LAYAR DIHIDUPKAN KEMBALI
+        document.addEventListener("visibilitychange", async function() {
+            if (document.visibilityState === 'visible') {
+                if (sessionStorage.getItem("chat_auth") === "true") {
+                    currentSender = (sessionStorage.getItem("chat_sender") || "").toLowerCase().trim();
+                    await loadMessages();
+                    subscribeToRealtime();
+                    scrollToBottom();
+                }
+            }
+        });
+
         function pressKey(digit) {
             if (enteredPasscode.length < 4) {
                 enteredPasscode += digit;
@@ -296,11 +347,11 @@
             for (let i = 1; i <= 4; i++) {
                 const dot = document.getElementById(`dot-${i}`);
                 if (i <= enteredPasscode.length) {
-                    dot.classList.add('bg-white', 'border-white');
-                    dot.classList.remove('border-white/40');
+                    dot.classList.add('bg-[#e87a96]', 'border-[#e87a96]');
+                    dot.classList.remove('border-[#d69aa6]');
                 } else {
-                    dot.classList.remove('bg-white', 'border-white');
-                    dot.classList.add('border-white/40');
+                    dot.classList.remove('bg-[#e87a96]', 'border-[#e87a96]');
+                    dot.classList.add('border-[#d69aa6]');
                 }
             }
         }
@@ -332,7 +383,7 @@
 
         async function openChatApp() {
             document.getElementById('password-section').classList.add('hidden');
-            document.getElementById('header-title').innerText = `Masuk: ${currentSender}`;
+            document.getElementById('header-title').innerText = `${currentSender} ♥`;
             await ensureRoomExists();
             await loadMessages();
             subscribeToRealtime();
@@ -491,18 +542,18 @@
             wrapper.className = `flex w-full mb-1.5 group relative ${isLeft ? 'justify-start' : 'justify-end'}`;
 
             const bubble = document.createElement('div');
-            bubble.className = `max-w-[80%] px-3.5 py-2 rounded-2xl text-sm shadow-md relative ${
+            bubble.className = `max-w-[80%] px-3.5 py-2.5 rounded-2xl text-sm relative ${
                 isLeft 
-                  ? 'bg-zinc-800 text-slate-100 rounded-tl-xs border border-white/10' 
-                  : 'bg-gradient-to-tr from-blue-600 to-blue-500 text-white rounded-tr-xs shadow-blue-500/30'
+                  ? 'bubble-left rounded-tl-xs' 
+                  : 'bubble-right rounded-tr-xs'
             }`;
 
             let replyHtml = '';
             if (msg.reply_to_text) {
                 replyHtml = `
-                    <div class="${isLeft ? 'bg-white/10 border-blue-400' : 'bg-white/20 border-white'} border-l-3 p-1.5 mb-1.5 rounded-lg text-xs">
-                        <span class="font-bold ${isLeft ? 'text-blue-400' : 'text-white'} block">${escapeHtml(msg.reply_to_sender || '')}</span>
-                        <span class="${isLeft ? 'text-slate-200' : 'text-white/95'} truncate block font-medium">${escapeHtml(msg.reply_to_text)}</span>
+                    <div class="${isLeft ? 'bg-[#fce8ec] border-[#e87a96]' : 'bg-white/45 border-[#c95b76]'} border-l-3 p-1.5 mb-1.5 rounded-lg text-xs">
+                        <span class="font-bold text-[#b84864] block">${escapeHtml(msg.reply_to_sender || '')}</span>
+                        <span class="text-[#5c3d42] truncate block font-medium">${escapeHtml(msg.reply_to_text)}</span>
                     </div>
                 `;
             }
@@ -512,7 +563,7 @@
                 try {
                     const { data } = await supabaseClient.storage.from('chat-images').createSignedUrl(msg.image_path, 3600);
                     if (data && data.signedUrl) {
-                        imageHtml = `<img src="${data.signedUrl}" class="rounded-xl mb-1 max-h-60 object-cover shadow cursor-pointer hover:opacity-95 transition" onclick="openImageModal('${data.signedUrl}')">`;
+                        imageHtml = `<img src="${data.signedUrl}" class="rounded-xl mb-1.5 max-h-60 object-cover shadow-xs cursor-pointer hover:opacity-95 transition border border-white/50" onclick="openImageModal('${data.signedUrl}')">`;
                     }
                 } catch(e) {
                     console.error("Gagal muat URL foto:", e);
@@ -525,11 +576,11 @@
                 ${replyHtml}
                 ${imageHtml}
                 ${msg.content ? `<p class="break-words pr-10 leading-relaxed font-normal">${escapeHtml(msg.content)}</p>` : ''}
-                <span class="text-[9px] ${isLeft ? 'text-slate-400' : 'text-white/80'} float-right ml-2 mt-1 select-none font-medium">${timeStr}</span>
+                <span class="text-[9px] text-[#8c666d] float-right ml-2 mt-1 select-none font-medium">${timeStr} ${!isLeft ? '♥' : ''}</span>
             `;
 
             const menuBtn = document.createElement('button');
-            menuBtn.className = `absolute top-1 right-1 opacity-0 group-hover:opacity-100 ${isLeft ? 'bg-white/10 text-slate-300' : 'bg-white/20 text-white'} hover:scale-110 rounded-full p-1 transition shadow-xs`;
+            menuBtn.className = `absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-100 bg-white/60 text-[#6e4a50] hover:scale-110 rounded-full p-1 transition shadow-2xs`;
             menuBtn.innerHTML = `<svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>`;
             menuBtn.onclick = (e) => {
                 e.stopPropagation();
@@ -545,7 +596,7 @@
             toggleSidebar();
             const modal = document.getElementById('gallery-modal');
             const grid = document.getElementById('gallery-grid');
-            grid.innerHTML = '<p class="col-span-3 text-center text-xs text-slate-400 mt-10 font-bold">Memuat galeri...</p>';
+            grid.innerHTML = '<p class="col-span-3 text-center text-xs text-[#8c666d] mt-10 font-bold">Memuat galeri...</p>';
             modal.classList.remove('hidden');
 
             const { data, error } = await supabaseClient
@@ -557,7 +608,7 @@
 
             grid.innerHTML = '';
             if (!data || data.length === 0) {
-                grid.innerHTML = '<p class="col-span-3 text-center text-xs text-slate-400 mt-10 font-bold">Belum ada foto yang dibagikan.</p>';
+                grid.innerHTML = '<p class="col-span-3 text-center text-xs text-[#8c666d] mt-10 font-bold">Belum ada foto yang dibagikan.</p>';
                 return;
             }
 
@@ -566,7 +617,7 @@
                     const { data: urlData } = await supabaseClient.storage.from('chat-images').createSignedUrl(item.image_path, 3600);
                     if (urlData && urlData.signedUrl) {
                         const imgBox = document.createElement('div');
-                        imgBox.className = 'aspect-square overflow-hidden cursor-pointer bg-zinc-900 rounded-xl shadow-xs';
+                        imgBox.className = 'aspect-square overflow-hidden cursor-pointer bg-white/70 rounded-xl shadow-2xs border border-[#ecc4cd]';
                         imgBox.innerHTML = `<img src="${urlData.signedUrl}" class="w-full h-full object-cover hover:scale-105 transition duration-300" onclick="openImageModal('${urlData.signedUrl}')">`;
                         grid.appendChild(imgBox);
                     }

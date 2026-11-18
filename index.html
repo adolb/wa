@@ -2,13 +2,112 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <!-- DI SINI PENGUNCIAN ZOOM DITERAPKAN SECARA KETAT -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <title>Cozy Pastel Chat • Adolb</title>
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Cozy Chat • Adolb</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
+        /* ==================== VARIABEL TEMA (PASTEL & NIGHT EYE-CARE) ==================== */
+        :root {
+            --outer-bg: linear-gradient(45deg, #f7dce2, #fdf2f4, #f4ced7);
+            --window-bg: linear-gradient(160deg, #fff6f7 0%, #fce8ec 50%, #f9e1e6 100%);
+            --window-border: rgba(235, 175, 190, 0.45);
+            --window-shadow: 0 25px 50px -12px rgba(180, 110, 125, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+            
+            --floral-bg: 
+                radial-gradient(circle at 18% 25%, rgba(255, 192, 203, 0.28) 0%, transparent 45%),
+                radial-gradient(circle at 82% 72%, rgba(247, 202, 201, 0.35) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, rgba(255, 245, 240, 0.6) 0%, transparent 70%);
+            
+            --glass-header-bg: rgba(255, 248, 249, 0.78);
+            --glass-footer-bg: rgba(255, 248, 249, 0.82);
+            --glass-sidebar-bg: rgba(255, 244, 246, 0.96);
+            --glass-border: rgba(230, 175, 188, 0.38);
+
+            --text-primary: #4a3236;
+            --text-secondary: #8c666d;
+            --text-accent: #c95b76;
+            --text-danger: #b83b52;
+
+            --surface-card: rgba(255, 255, 255, 0.85);
+            --surface-hover: #fce3e8;
+            --surface-active: #f7c8d3;
+            --surface-border: rgba(236, 196, 205, 0.75);
+
+            --bubble-left-bg: rgba(255, 253, 251, 0.92);
+            --bubble-left-text: #4a3538;
+            --bubble-left-border: rgba(235, 190, 200, 0.45);
+            --bubble-left-shadow: 0 4px 12px rgba(185, 130, 140, 0.08);
+
+            --bubble-right-bg: linear-gradient(135deg, #fbd1dc 0%, #f5b7c7 100%);
+            --bubble-right-text: #4a2e33;
+            --bubble-right-border: rgba(238, 160, 180, 0.55);
+            --bubble-right-shadow: 0 4px 14px rgba(225, 135, 155, 0.22);
+
+            --reply-left-bg: #fce8ec;
+            --reply-right-bg: rgba(255, 255, 255, 0.45);
+
+            --input-bg: rgba(255, 255, 255, 0.92);
+            --input-placeholder: #b08b92;
+            --accent-btn-bg: linear-gradient(45deg, #f296ae, #e87a96);
+            --accent-solid: #e87a96;
+            --dot-border: #d69aa6;
+            --decor-opacity: 0.35;
+            --audio-filter: none;
+        }
+
+        /* MODE MALAM */
+        [data-theme="dark"] {
+            --outer-bg: linear-gradient(145deg, #0b0d11 0%, #12151c 50%, #0e1015 100%);
+            --window-bg: linear-gradient(165deg, #161922 0%, #13161e 55%, #101218 100%);
+            --window-border: rgba(255, 255, 255, 0.07);
+            --window-shadow: 0 25px 60px -12px rgba(0, 0, 0, 0.75), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            
+            --floral-bg: 
+                radial-gradient(circle at 18% 25%, rgba(217, 119, 147, 0.06) 0%, transparent 45%),
+                radial-gradient(circle at 82% 72%, rgba(124, 138, 184, 0.06) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, rgba(22, 25, 34, 0.9) 0%, transparent 80%);
+            
+            --glass-header-bg: rgba(22, 25, 34, 0.84);
+            --glass-footer-bg: rgba(22, 25, 34, 0.88);
+            --glass-sidebar-bg: rgba(20, 23, 31, 0.97);
+            --glass-border: rgba(255, 255, 255, 0.07);
+
+            --text-primary: #e4e6ed;
+            --text-secondary: #8e96aa;
+            --text-accent: #e598ad;
+            --text-danger: #f28b9c;
+
+            --surface-card: rgba(32, 37, 49, 0.85);
+            --surface-hover: rgba(46, 52, 68, 0.9);
+            --surface-active: rgba(62, 69, 89, 0.95);
+            --surface-border: rgba(255, 255, 255, 0.08);
+
+            --bubble-left-bg: #212531;
+            --bubble-left-text: #dfe2ec;
+            --bubble-left-border: rgba(255, 255, 255, 0.06);
+            --bubble-left-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+
+            --bubble-right-bg: linear-gradient(135deg, #3c2532 0%, #4d2d3e 100%);
+            --bubble-right-text: #f5e6eb;
+            --bubble-right-border: rgba(229, 152, 173, 0.22);
+            --bubble-right-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+
+            --reply-left-bg: rgba(18, 21, 28, 0.65);
+            --reply-right-bg: rgba(20, 12, 17, 0.45);
+
+            --input-bg: #1d212b;
+            --input-placeholder: #6c7489;
+            --accent-btn-bg: linear-gradient(45deg, #c96b85, #b05670);
+            --accent-solid: #d97c96;
+            --dot-border: #555e75;
+            --decor-opacity: 0.08;
+            --audio-filter: invert(0.88) hue-rotate(180deg) saturate(0.8);
+        }
+
         @keyframes bbShake {
             0%, 100% { transform: translate(0, 0) rotate(0deg); }
             15% { transform: translate(-10px, -6px) rotate(-1.5deg); }
@@ -24,64 +123,111 @@
 
         html, body {
             overscroll-behavior: none;
+            touch-action: pan-x pan-y; /* Mencegah double-tap zoom dan pinch-to-zoom */
             width: 100%;
             height: 100%;
             height: 100dvh;
             overflow: hidden;
             margin: 0;
             padding: 0;
+            background: var(--outer-bg);
+            color: var(--text-primary);
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+            transition: background 0.35s ease, color 0.35s ease;
         }
 
         .cozy-window {
-            background: linear-gradient(160deg, #fff6f7 0%, #fce8ec 50%, #f9e1e6 100%);
-            border: 1px solid rgba(235, 175, 190, 0.45);
-            box-shadow: 0 25px 50px -12px rgba(180, 110, 125, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+            background: var(--window-bg);
+            border: 1px solid var(--window-border);
+            box-shadow: var(--window-shadow);
             position: relative;
+            transition: background 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease;
         }
 
         .floral-bg {
-            background-image: 
-                radial-gradient(circle at 18% 25%, rgba(255, 192, 203, 0.28) 0%, transparent 45%),
-                radial-gradient(circle at 82% 72%, rgba(247, 202, 201, 0.35) 0%, transparent 50%),
-                radial-gradient(circle at 50% 50%, rgba(255, 245, 240, 0.6) 0%, transparent 70%);
+            background-image: var(--floral-bg);
         }
 
         .cozy-glass-header {
-            background: rgba(255, 248, 249, 0.78);
-            backdrop-filter: blur(28px) saturate(180%);
-            -webkit-backdrop-filter: blur(28px) saturate(180%);
-            border-bottom: 1px solid rgba(230, 175, 188, 0.35);
+            background: var(--glass-header-bg);
+            backdrop-filter: blur(28px) saturate(160%);
+            -webkit-backdrop-filter: blur(28px) saturate(160%);
+            border-bottom: 1px solid var(--glass-border);
             padding-top: calc(0.75rem + env(safe-area-inset-top, 0px));
+            transition: background 0.35s ease, border-color 0.35s ease;
         }
 
         .cozy-glass-footer {
-            background: rgba(255, 248, 249, 0.82);
-            backdrop-filter: blur(28px) saturate(180%);
-            -webkit-backdrop-filter: blur(28px) saturate(180%);
-            border-top: 1px solid rgba(230, 175, 188, 0.35);
+            background: var(--glass-footer-bg);
+            backdrop-filter: blur(28px) saturate(160%);
+            -webkit-backdrop-filter: blur(28px) saturate(160%);
+            border-top: 1px solid var(--glass-border);
             padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
+            transition: background 0.35s ease, border-color 0.35s ease;
         }
 
         .cozy-sidebar-glass {
-            background: rgba(255, 244, 246, 0.96);
-            backdrop-filter: blur(40px) saturate(180%);
-            -webkit-backdrop-filter: blur(40px) saturate(180%);
-            border-right: 1px solid rgba(230, 175, 188, 0.4);
+            background: var(--glass-sidebar-bg);
+            backdrop-filter: blur(40px) saturate(160%);
+            -webkit-backdrop-filter: blur(40px) saturate(160%);
+            border-right: 1px solid var(--glass-border);
+            transition: background 0.35s ease, border-color 0.35s ease;
+        }
+
+        .theme-card {
+            background: var(--surface-card);
+            border: 1px solid var(--surface-border);
+            color: var(--text-primary);
+            transition: all 0.2s ease;
+        }
+        .theme-card:hover {
+            background: var(--surface-hover);
+        }
+        .theme-card:active {
+            background: var(--surface-active);
+        }
+
+        .theme-input {
+            background: var(--input-bg);
+            color: var(--text-primary);
+            border: 1px solid var(--surface-border);
+            transition: all 0.25s ease;
+            font-size: 16px !important; /* Mencegah auto-zoom otomatis pada form input iOS Safari */
+        }
+        .theme-input::placeholder {
+            color: var(--input-placeholder);
         }
 
         .bubble-left {
-            background: rgba(255, 253, 251, 0.92);
-            color: #4a3538;
-            border: 1px solid rgba(235, 190, 200, 0.45);
-            box-shadow: 0 4px 12px rgba(185, 130, 140, 0.08);
+            background: var(--bubble-left-bg);
+            color: var(--bubble-left-text);
+            border: 1px solid var(--bubble-left-border);
+            box-shadow: var(--bubble-left-shadow);
         }
 
         .bubble-right {
-            background: linear-gradient(135deg, #fbd1dc 0%, #f5b7c7 100%);
-            color: #4a2e33;
-            border: 1px solid rgba(238, 160, 180, 0.55);
-            box-shadow: 0 4px 14px rgba(225, 135, 155, 0.22);
+            background: var(--bubble-right-bg);
+            color: var(--bubble-right-text);
+            border: 1px solid var(--bubble-right-border);
+            box-shadow: var(--bubble-right-shadow);
+        }
+
+        .reply-box-left {
+            background: var(--reply-left-bg);
+            border-color: var(--accent-solid);
+        }
+        .reply-box-right {
+            background: var(--reply-right-bg);
+            border-color: var(--text-accent);
+        }
+
+        audio.cozy-audio {
+            filter: var(--audio-filter);
+        }
+
+        .decor-layer {
+            opacity: var(--decor-opacity);
+            transition: opacity 0.35s ease;
         }
 
         #heart-canvas {
@@ -94,95 +240,112 @@
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb {
-            background: rgba(220, 155, 170, 0.45);
+            background: rgba(160, 145, 165, 0.35);
             border-radius: 10px;
         }
 
         #sidebar {
-            transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), background 0.35s ease;
         }
     </style>
 </head>
-<body class="bg-gradient-to-tr from-[#f7dce2] via-[#fdf2f4] to-[#f4ced7] h-[100dvh] w-full flex justify-center items-center p-0 sm:p-4">
+<body class="h-[100dvh] w-full flex justify-center items-center p-0 sm:p-4">
 
     <canvas id="heart-canvas"></canvas>
 
-    <div id="app" class="w-full h-[100dvh] sm:h-[92vh] sm:max-w-md sm:rounded-3xl flex flex-col overflow-hidden relative cozy-window transition-all duration-300">
+    <div id="app" class="w-full h-[100dvh] sm:h-[92vh] sm:max-w-md sm:rounded-3xl flex flex-col overflow-hidden relative cozy-window">
         
         <!-- ALERT TOAST -->
-        <div id="toast-modal" class="hidden absolute top-16 left-1/2 -translate-x-1/2 z-50 bg-[#5a3b40] text-[#fff6f8] text-xs font-semibold px-4 py-2.5 rounded-full shadow-lg backdrop-blur-xl transition-all text-center max-w-[85%]">
+        <div id="toast-modal" class="hidden absolute top-16 left-1/2 -translate-x-1/2 z-50 bg-[#2c252b] text-[#f5e9ec] border border-white/10 text-xs font-semibold px-4 py-2.5 rounded-full shadow-lg backdrop-blur-xl transition-all text-center max-w-[85%]">
             <span id="toast-message"></span>
         </div>
 
-        <!-- HALAMAN LOGIN PASSCODE PASTEL -->
+        <!-- HALAMAN LOGIN PASSCODE -->
         <div id="password-section" class="absolute inset-0 cozy-sidebar-glass z-50 p-6 flex flex-col justify-center items-center space-y-6">
-            <div class="w-16 h-16 bg-gradient-to-tr from-[#f7b2c4] to-[#f296ae] rounded-2xl flex items-center justify-center text-white text-3xl shadow-md border border-white/60 mb-1">🌸</div>
+            <button onclick="toggleTheme()" class="absolute top-5 right-5 theme-card px-3 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 shadow-2xs cursor-pointer" style="top: calc(1.25rem + env(safe-area-inset-top, 0px));">
+                <span class="theme-icon">🌙</span>
+                <span class="theme-label">Mode Malam</span>
+            </button>
+
+            <div class="w-16 h-16 rounded-2xl flex items-center justify-center text-white text-3xl shadow-md border border-white/20 mb-1" style="background: var(--accent-btn-bg);">🌸</div>
             <div class="text-center space-y-1">
-                <h2 class="text-lg font-bold text-[#4a3236] tracking-tight">Masukkan Passcode</h2>
-                <p class="text-xs text-[#8c666d] font-medium">hai, you!</p>
+                <h2 class="text-lg font-bold tracking-tight" style="color: var(--text-primary);">Masukkan Passcode</h2>
+                <p class="text-xs font-medium" style="color: var(--text-secondary);">hai, you!</p>
             </div>
 
             <div class="flex space-x-4 my-2">
-                <div id="dot-1" class="w-3.5 h-3.5 rounded-full border border-[#d69aa6] transition-all duration-200"></div>
-                <div id="dot-2" class="w-3.5 h-3.5 rounded-full border border-[#d69aa6] transition-all duration-200"></div>
-                <div id="dot-3" class="w-3.5 h-3.5 rounded-full border border-[#d69aa6] transition-all duration-200"></div>
-                <div id="dot-4" class="w-3.5 h-3.5 rounded-full border border-[#d69aa6] transition-all duration-200"></div>
+                <div id="dot-1" class="w-3.5 h-3.5 rounded-full border transition-all duration-200" style="border-color: var(--dot-border);"></div>
+                <div id="dot-2" class="w-3.5 h-3.5 rounded-full border transition-all duration-200" style="border-color: var(--dot-border);"></div>
+                <div id="dot-3" class="w-3.5 h-3.5 rounded-full border transition-all duration-200" style="border-color: var(--dot-border);"></div>
+                <div id="dot-4" class="w-3.5 h-3.5 rounded-full border transition-all duration-200" style="border-color: var(--dot-border);"></div>
             </div>
 
-            <p id="password-error" class="text-[#d94e67] text-xs text-center font-semibold h-4"></p>
+            <p id="password-error" class="text-xs text-center font-semibold h-4" style="color: var(--text-danger);"></p>
 
             <div class="grid grid-cols-3 gap-4 max-w-[260px] w-full">
-                <button onclick="pressKey('1')" class="h-16 w-16 mx-auto rounded-full bg-white/80 hover:bg-[#fce3e8] active:bg-[#f7c8d3] text-[#4a3236] border border-[#ecc4cd] text-2xl font-semibold flex items-center justify-center transition select-none shadow-xs">1</button>
-                <button onclick="pressKey('2')" class="h-16 w-16 mx-auto rounded-full bg-white/80 hover:bg-[#fce3e8] active:bg-[#f7c8d3] text-[#4a3236] border border-[#ecc4cd] text-2xl font-semibold flex items-center justify-center transition select-none shadow-xs">2</button>
-                <button onclick="pressKey('3')" class="h-16 w-16 mx-auto rounded-full bg-white/80 hover:bg-[#fce3e8] active:bg-[#f7c8d3] text-[#4a3236] border border-[#ecc4cd] text-2xl font-semibold flex items-center justify-center transition select-none shadow-xs">3</button>
-                <button onclick="pressKey('4')" class="h-16 w-16 mx-auto rounded-full bg-white/80 hover:bg-[#fce3e8] active:bg-[#f7c8d3] text-[#4a3236] border border-[#ecc4cd] text-2xl font-semibold flex items-center justify-center transition select-none shadow-xs">4</button>
-                <button onclick="pressKey('5')" class="h-16 w-16 mx-auto rounded-full bg-white/80 hover:bg-[#fce3e8] active:bg-[#f7c8d3] text-[#4a3236] border border-[#ecc4cd] text-2xl font-semibold flex items-center justify-center transition select-none shadow-xs">5</button>
-                <button onclick="pressKey('6')" class="h-16 w-16 mx-auto rounded-full bg-white/80 hover:bg-[#fce3e8] active:bg-[#f7c8d3] text-[#4a3236] border border-[#ecc4cd] text-2xl font-semibold flex items-center justify-center transition select-none shadow-xs">6</button>
-                <button onclick="pressKey('7')" class="h-16 w-16 mx-auto rounded-full bg-white/80 hover:bg-[#fce3e8] active:bg-[#f7c8d3] text-[#4a3236] border border-[#ecc4cd] text-2xl font-semibold flex items-center justify-center transition select-none shadow-xs">7</button>
-                <button onclick="pressKey('8')" class="h-16 w-16 mx-auto rounded-full bg-white/80 hover:bg-[#fce3e8] active:bg-[#f7c8d3] text-[#4a3236] border border-[#ecc4cd] text-2xl font-semibold flex items-center justify-center transition select-none shadow-xs">8</button>
-                <button onclick="pressKey('9')" class="h-16 w-16 mx-auto rounded-full bg-white/80 hover:bg-[#fce3e8] active:bg-[#f7c8d3] text-[#4a3236] border border-[#ecc4cd] text-2xl font-semibold flex items-center justify-center transition select-none shadow-xs">9</button>
+                <button onclick="pressKey('1')" class="h-16 w-16 mx-auto rounded-full theme-card text-2xl font-semibold flex items-center justify-center select-none shadow-xs">1</button>
+                <button onclick="pressKey('2')" class="h-16 w-16 mx-auto rounded-full theme-card text-2xl font-semibold flex items-center justify-center select-none shadow-xs">2</button>
+                <button onclick="pressKey('3')" class="h-16 w-16 mx-auto rounded-full theme-card text-2xl font-semibold flex items-center justify-center select-none shadow-xs">3</button>
+                <button onclick="pressKey('4')" class="h-16 w-16 mx-auto rounded-full theme-card text-2xl font-semibold flex items-center justify-center select-none shadow-xs">4</button>
+                <button onclick="pressKey('5')" class="h-16 w-16 mx-auto rounded-full theme-card text-2xl font-semibold flex items-center justify-center select-none shadow-xs">5</button>
+                <button onclick="pressKey('6')" class="h-16 w-16 mx-auto rounded-full theme-card text-2xl font-semibold flex items-center justify-center select-none shadow-xs">6</button>
+                <button onclick="pressKey('7')" class="h-16 w-16 mx-auto rounded-full theme-card text-2xl font-semibold flex items-center justify-center select-none shadow-xs">7</button>
+                <button onclick="pressKey('8')" class="h-16 w-16 mx-auto rounded-full theme-card text-2xl font-semibold flex items-center justify-center select-none shadow-xs">8</button>
+                <button onclick="pressKey('9')" class="h-16 w-16 mx-auto rounded-full theme-card text-2xl font-semibold flex items-center justify-center select-none shadow-xs">9</button>
                 <div></div>
-                <button onclick="pressKey('0')" class="h-16 w-16 mx-auto rounded-full bg-white/80 hover:bg-[#fce3e8] active:bg-[#f7c8d3] text-[#4a3236] border border-[#ecc4cd] text-2xl font-semibold flex items-center justify-center transition select-none shadow-xs">0</button>
-                <button onclick="deleteKey()" class="h-16 w-16 mx-auto rounded-full flex items-center justify-center text-[#8c666d] hover:text-[#4a3236] active:scale-95 transition select-none text-xl font-bold">⌫</button>
+                <button onclick="pressKey('0')" class="h-16 w-16 mx-auto rounded-full theme-card text-2xl font-semibold flex items-center justify-center select-none shadow-xs">0</button>
+                <button onclick="deleteKey()" class="h-16 w-16 mx-auto rounded-full flex items-center justify-center active:scale-95 transition select-none text-xl font-bold" style="color: var(--text-secondary);">⌫</button>
             </div>
         </div>
 
         <!-- SIDEBAR DRAWER -->
         <div id="sidebar" class="absolute inset-y-0 left-0 w-72 cozy-sidebar-glass z-40 transform -translate-x-full flex flex-col shadow-xl">
-            <div class="p-5 border-b border-[#ecc4cd]/50 flex justify-between items-center" style="padding-top: calc(1.25rem + env(safe-area-inset-top, 0px));">
+            <div class="p-5 flex justify-between items-center" style="border-bottom: 1px solid var(--glass-border); padding-top: calc(1.25rem + env(safe-area-inset-top, 0px));">
                 <div class="flex items-center space-x-2">
                     <span class="text-base">🌸</span>
-                    <span class="text-xs font-bold text-[#6e4a50]">Menu Ruang</span>
+                    <span class="text-xs font-bold" style="color: var(--text-primary);">Menu Ruang</span>
                 </div>
-                <button onclick="toggleSidebar()" class="text-[#8c666d] font-bold text-sm hover:opacity-75 p-1">✕</button>
+                <button onclick="toggleSidebar()" class="font-bold text-sm hover:opacity-75 p-1" style="color: var(--text-secondary);">✕</button>
             </div>
             
             <div class="flex-1 p-4 space-y-2.5 overflow-y-auto">
-                <button onclick="openGallery()" class="w-full flex items-center space-x-3 p-3.5 rounded-2xl bg-white/80 hover:bg-[#fce3e8] text-[#4a3236] text-sm font-semibold shadow-xs transition border border-[#ecc4cd]/60">
+                <div class="p-3 rounded-2xl theme-card space-y-2">
+                    <span class="text-[11px] font-bold block" style="color: var(--text-secondary);">Tampilan Tema</span>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button id="btn-theme-light" onclick="setTheme('light')" class="py-2 px-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 border transition cursor-pointer">
+                            <span>🌸</span> Pastel
+                        </button>
+                        <button id="btn-theme-dark" onclick="setTheme('dark')" class="py-2 px-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 border transition cursor-pointer">
+                            <span>🌙</span> Malam
+                        </button>
+                    </div>
+                </div>
+
+                <button onclick="openGallery()" class="w-full flex items-center space-x-3 p-3.5 rounded-2xl theme-card text-sm font-semibold shadow-xs cursor-pointer">
                     <span class="text-xl">🌷</span>
                     <span class="font-semibold">Galeri Kenangan</span>
                 </button>
-                <button onclick="openArchiveMenu()" class="w-full flex items-center space-x-3 p-3.5 rounded-2xl bg-white/80 hover:bg-[#fce3e8] text-[#4a3236] text-sm font-semibold shadow-xs transition border border-[#ecc4cd]/60">
+                <button onclick="openArchiveMenu()" class="w-full flex items-center space-x-3 p-3.5 rounded-2xl theme-card text-sm font-semibold shadow-xs cursor-pointer">
                     <span class="text-xl">📖</span>
                     <span class="font-semibold">Arsip Harian</span>
                 </button>
             </div>
 
-            <div class="p-4 border-t border-[#ecc4cd]/50">
-                <button onclick="logout()" class="w-full bg-[#fae1e6] hover:bg-[#f5ccd4] text-[#b83b52] p-3.5 rounded-2xl font-bold text-sm transition border border-[#ebaeb9]">Keluar</button>
+            <div class="p-4" style="border-top: 1px solid var(--glass-border);">
+                <button onclick="logout()" class="w-full theme-card p-3.5 rounded-2xl font-bold text-sm transition cursor-pointer" style="color: var(--text-danger);">Keluar</button>
             </div>
         </div>
-        <div id="sidebar-overlay" class="absolute inset-0 bg-[#4a2e33]/25 z-30 hidden backdrop-blur-xs transition-opacity" onclick="toggleSidebar()"></div>
+        <div id="sidebar-overlay" class="absolute inset-0 bg-black/40 z-30 hidden backdrop-blur-xs transition-opacity" onclick="toggleSidebar()"></div>
 
-        <!-- HEADER COZY PASTEL -->
+        <!-- HEADER -->
         <div class="cozy-glass-header px-4 pb-3 flex justify-between items-center z-10 shrink-0">
-            <div class="flex items-center space-x-2.5">
-                <button onclick="toggleSidebar()" class="w-8 h-8 flex items-center justify-center text-[#6e4a50] hover:bg-[#f7dce2]/60 rounded-full transition">
+            <div class="flex items-center space-x-2">
+                <button onclick="toggleSidebar()" class="w-8 h-8 flex items-center justify-center rounded-full transition hover:opacity-75" style="color: var(--text-primary);">
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h16"/></svg>
                 </button>
-                <div class="w-9 h-9 bg-gradient-to-tr from-[#f7b2c4] to-[#f296ae] rounded-full flex items-center justify-center text-white font-bold text-sm shadow-xs border border-white">🌸</div>
+                <div class="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-xs border border-white/30" style="background: var(--accent-btn-bg);">🌸</div>
                 <div>
-                    <h1 id="header-title" class="font-bold text-sm text-[#4a3236] tracking-tight">Chat</h1>
+                    <h1 id="header-title" class="font-bold text-sm tracking-tight" style="color: var(--text-primary);">Chat</h1>
                     <span id="ntfy-info-badge" class="text-[10px] text-[#7ca882] font-semibold flex items-center gap-1">
                         <span class="w-1.5 h-1.5 rounded-full bg-[#7ca882] animate-pulse"></span> ntfy: - ♥
                     </span>
@@ -190,15 +353,18 @@
             </div>
             
             <div class="flex items-center space-x-1.5">
-                <button onclick="triggerHeartRain()" class="w-8 h-8 rounded-full bg-pink-500/15 hover:bg-pink-500/25 text-[#b84864] flex items-center justify-center text-xs transition active:scale-95 border border-[#ecc4cd]" title="Hujan Hati">
+                <button onclick="toggleTheme()" class="w-8 h-8 rounded-full theme-card flex items-center justify-center text-xs transition active:scale-95 cursor-pointer" title="Ganti Tema">
+                    <span class="theme-icon">🌙</span>
+                </button>
+                <button onclick="triggerHeartRain()" class="w-8 h-8 rounded-full theme-card flex items-center justify-center text-xs transition active:scale-95 cursor-pointer" title="Hujan Hati">
                     ❤️
                 </button>
-                <button onclick="logout()" class="text-xs bg-white/80 hover:bg-[#fce3e8] border border-[#ecc4cd] px-3.5 py-1.5 rounded-full text-[#6e4a50] font-bold active:scale-95 transition shadow-2xs">Keluar</button>
+                <button onclick="logout()" class="text-xs theme-card px-3 py-1.5 rounded-full font-bold active:scale-95 transition shadow-2xs cursor-pointer">Keluar</button>
             </div>
         </div>
 
-        <!-- DEKORASI BUNGA HALUS -->
-        <div class="pointer-events-none absolute inset-0 overflow-hidden z-0 opacity-35">
+        <!-- DEKORASI BUNGA -->
+        <div class="pointer-events-none absolute inset-0 overflow-hidden z-0 decor-layer">
             <div class="absolute top-20 right-4 text-4xl rotate-12 select-none">🌸</div>
             <div class="absolute bottom-28 left-4 text-4xl -rotate-12 select-none">🌷</div>
             <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-7xl opacity-30 select-none">🎀</div>
@@ -211,8 +377,8 @@
         <!-- GALERI MODAL -->
         <div id="gallery-modal" class="absolute inset-0 cozy-sidebar-glass z-50 hidden flex flex-col">
             <div class="cozy-glass-header px-4 pb-3 flex justify-between items-center shrink-0">
-                <h2 class="font-bold text-[#4a3236] text-sm">Galeri Foto 🌸</h2>
-                <button onclick="closeGallery()" class="text-xs bg-[#f5b7c7] text-[#4a2e33] px-3 py-1.5 rounded-full font-bold">Tutup</button>
+                <h2 class="font-bold text-sm" style="color: var(--text-primary);">Galeri Foto 🌸</h2>
+                <button onclick="closeGallery()" class="text-xs text-white px-3 py-1.5 rounded-full font-bold cursor-pointer" style="background: var(--accent-btn-bg);">Tutup</button>
             </div>
             <div id="gallery-grid" class="flex-1 p-2 grid grid-cols-3 gap-2 overflow-y-auto content-start">
             </div>
@@ -221,50 +387,50 @@
         <!-- MODAL ARSIP HARIAN -->
         <div id="archive-modal" class="absolute inset-0 cozy-sidebar-glass z-50 hidden flex flex-col">
             <div class="cozy-glass-header px-4 pb-3 flex justify-between items-center shrink-0">
-                <h2 id="archive-modal-title" class="font-bold text-[#4a3236] text-sm truncate pr-2">Arsip Harian 📖</h2>
-                <button onclick="closeArchiveModal()" class="text-xs bg-[#f5b7c7] text-[#4a2e33] px-3 py-1.5 rounded-full font-bold shrink-0">Tutup</button>
+                <h2 id="archive-modal-title" class="font-bold text-sm truncate pr-2" style="color: var(--text-primary);">Arsip Harian 📖</h2>
+                <button onclick="closeArchiveModal()" class="text-xs text-white px-3 py-1.5 rounded-full font-bold shrink-0 cursor-pointer" style="background: var(--accent-btn-bg);">Tutup</button>
             </div>
             <div id="archive-content" class="flex-1 p-3 overflow-y-auto space-y-2.5 floral-bg">
             </div>
         </div>
 
         <!-- MODAL GAMBAR BESAR -->
-        <div id="image-modal" class="fixed inset-0 bg-[#3a2428]/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4 cursor-pointer" onclick="closeImageModal()">
-            <img id="modal-img" class="max-w-full max-h-full rounded-2xl shadow-2xl object-contain border-2 border-white/60">
+        <div id="image-modal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-4 cursor-pointer" onclick="closeImageModal()">
+            <img id="modal-img" class="max-w-full max-h-full rounded-2xl shadow-2xl object-contain border border-white/20">
         </div>
 
         <!-- PANEL REPLY PREVIEW -->
-        <div id="reply-preview-container" class="hidden px-4 py-2 bg-[#fff5f7]/95 border-t border-[#ecc4cd] flex justify-between items-center text-xs z-10 shrink-0 backdrop-blur-md">
-            <div class="flex flex-col border-l-3 border-[#ea8ca3] pl-2.5 overflow-hidden">
-                <span id="reply-preview-sender" class="font-bold text-[#c95b76]"></span>
-                <span id="reply-preview-text" class="text-[#6e4a50] truncate font-medium"></span>
+        <div id="reply-preview-container" class="hidden px-4 py-2 flex justify-between items-center text-xs z-10 shrink-0 backdrop-blur-md" style="background: var(--glass-header-bg); border-top: 1px solid var(--glass-border);">
+            <div class="flex flex-col border-l-3 pl-2.5 overflow-hidden" style="border-color: var(--accent-solid);">
+                <span id="reply-preview-sender" class="font-bold" style="color: var(--text-accent);"></span>
+                <span id="reply-preview-text" class="truncate font-medium" style="color: var(--text-secondary);"></span>
             </div>
-            <button onclick="cancelReply()" class="text-[#8c666d] hover:text-[#4a3236] font-bold px-2 text-sm">✕</button>
+            <button onclick="cancelReply()" class="font-bold px-2 text-sm" style="color: var(--text-secondary);">✕</button>
         </div>
 
         <!-- INDIKATOR MEREKAM VOICE NOTE -->
-        <div id="recording-indicator" class="hidden px-4 py-2.5 bg-[#fce8ec]/95 border-t border-[#e87a96] justify-between items-center z-10 shrink-0 backdrop-blur-md">
+        <div id="recording-indicator" class="hidden px-4 py-2.5 justify-between items-center z-10 shrink-0 backdrop-blur-md" style="background: var(--glass-header-bg); border-top: 1px solid var(--accent-solid);">
             <div class="flex items-center space-x-2">
-                <span class="w-2.5 h-2.5 rounded-full bg-[#d94e67] animate-ping"></span>
-                <span class="text-xs font-bold text-[#b83b52]">Merekam Suara...</span>
-                <span id="recording-timer" class="text-xs font-mono font-bold text-[#4a3236] bg-white/80 px-2 py-0.5 rounded-md border border-[#ecc4cd]">00:00</span>
+                <span class="w-2.5 h-2.5 rounded-full bg-[#e0526c] animate-ping"></span>
+                <span class="text-xs font-bold" style="color: var(--text-danger);">Merekam Suara...</span>
+                <span id="recording-timer" class="text-xs font-mono font-bold theme-card px-2 py-0.5 rounded-md">00:00</span>
             </div>
             <div class="flex items-center space-x-2">
-                <button onclick="cancelRecording()" class="text-xs text-[#8c666d] hover:text-[#4a3236] font-bold px-2.5 py-1 rounded-full bg-white/70 border border-[#ecc4cd]">Batal</button>
-                <button onclick="stopAndSendRecording()" class="text-xs bg-gradient-to-tr from-[#f296ae] to-[#e87a96] text-white px-3.5 py-1 rounded-full font-bold shadow-xs">Kirim VN</button>
+                <button onclick="cancelRecording()" class="text-xs font-bold px-2.5 py-1 rounded-full theme-card">Batal</button>
+                <button onclick="stopAndSendRecording()" class="text-xs text-white px-3.5 py-1 rounded-full font-bold shadow-xs" style="background: var(--accent-btn-bg);">Kirim VN</button>
             </div>
         </div>
 
-        <!-- PANEL INPUT CHATBOX DENGAN TOMBOL PING DI KIRI UPLOAD & VN -->
+        <!-- PANEL INPUT CHATBOX -->
         <div id="chat-input-bar" class="cozy-glass-footer px-3 pt-2.5 pb-2 flex items-center space-x-1.5 z-10 shrink-0">
             
-            <!-- TOMBOL PING DI SEBELAH KIRI UPLOAD & VN -->
+            <!-- TOMBOL PING -->
             <button onclick="sendPingNotification()" class="bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 active:scale-95 text-white font-black text-xs p-2.5 rounded-xl shadow-xs transition cursor-pointer shrink-0 flex items-center justify-center" title="Kirim PING!">
                 ⚡
             </button>
 
             <!-- Tombol Pilih Gambar -->
-            <label class="cursor-pointer text-[#a3767f] hover:text-[#d96b86] p-1.5 transition shrink-0" title="Kirim Gambar">
+            <label class="cursor-pointer p-1.5 transition shrink-0 hover:opacity-80" style="color: var(--text-secondary);" title="Kirim Gambar">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
@@ -272,31 +438,80 @@
             </label>
 
             <!-- Tombol Mikrofon Voice Note -->
-            <button id="mic-btn" onclick="toggleVoiceRecording()" class="text-[#a3767f] hover:text-[#d96b86] p-1.5 transition shrink-0" title="Rekam Voice Note">
+            <button id="mic-btn" onclick="toggleVoiceRecording()" class="p-1.5 transition shrink-0 hover:opacity-80" style="color: var(--text-secondary);" title="Rekam Voice Note">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
                 </svg>
             </button>
 
             <!-- Input Teks -->
-            <input type="text" id="message-input" placeholder="Tulis pesan manis..." class="flex-1 min-w-0 bg-white/90 text-[#4a3236] placeholder-[#b08b92] border border-[#ecc4cd] px-3.5 py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#f296ae] shadow-2xs text-xs sm:text-sm" onkeypress="handleMessageKey(event)">
+            <input type="text" id="message-input" placeholder="Tulis pesan manis..." class="flex-1 min-w-0 theme-input px-3.5 py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#d97c96] shadow-2xs text-xs sm:text-sm" onkeypress="handleMessageKey(event)">
             
             <!-- Tombol Kirim Pesan -->
-            <button onclick="sendMessage()" class="bg-gradient-to-tr from-[#f296ae] to-[#e87a96] hover:opacity-95 text-white w-9 h-9 rounded-full flex items-center justify-center shadow-xs transition active:scale-95 shrink-0">
+            <button onclick="sendMessage()" class="text-white w-9 h-9 rounded-full flex items-center justify-center shadow-xs transition active:scale-95 shrink-0 cursor-pointer" style="background: var(--accent-btn-bg);">
                 <svg viewBox="0 0 24 24" width="14" height="14" class="fill-current"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path></svg>
             </button>
         </div>
     </div>
 
     <script>
+        function initTheme() {
+            const savedTheme = localStorage.getItem('cozy_chat_theme') || 'light';
+            setTheme(savedTheme);
+        }
+
+        function setTheme(theme) {
+            const isDark = theme === 'dark';
+            if (isDark) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            } else {
+                document.documentElement.removeAttribute('data-theme');
+            }
+            localStorage.setItem('cozy_chat_theme', theme);
+
+            document.querySelectorAll('.theme-icon').forEach(el => {
+                el.textContent = isDark ? '🌸' : '🌙';
+            });
+            document.querySelectorAll('.theme-label').forEach(el => {
+                el.textContent = isDark ? 'Mode Pastel' : 'Mode Malam';
+            });
+
+            const btnLight = document.getElementById('btn-theme-light');
+            const btnDark = document.getElementById('btn-theme-dark');
+            if (btnLight && btnDark) {
+                if (isDark) {
+                    btnDark.style.background = 'var(--accent-btn-bg)';
+                    btnDark.style.color = '#ffffff';
+                    btnDark.style.borderColor = 'transparent';
+                    btnLight.style.background = 'transparent';
+                    btnLight.style.color = 'var(--text-secondary)';
+                    btnLight.style.borderColor = 'var(--surface-border)';
+                } else {
+                    btnLight.style.background = 'var(--accent-btn-bg)';
+                    btnLight.style.color = '#ffffff';
+                    btnLight.style.borderColor = 'transparent';
+                    btnDark.style.background = 'transparent';
+                    btnDark.style.color = 'var(--text-secondary)';
+                    btnDark.style.borderColor = 'var(--surface-border)';
+                }
+            }
+        }
+
+        function toggleTheme() {
+            const current = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+            setTheme(current === 'dark' ? 'light' : 'dark');
+        }
+
+        initTheme();
+
         const SUPABASE_URL = 'https://awlxjzfadktcthbumxle.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_LnE9IH5KKDzdV-gj9tIb6w_uOGVZi4o';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         const FIXED_ROOM_ID = "00000000-0000-0000-0000-000000000001";
         let currentSender = "";
-        let myNtfyTopic = ""; // Ruang ntfy tempat kita subscribe menerima PING
-        let targetNtfyTopic = ""; // Ruang ntfy tempat kita mengirim PING
+        let myNtfyTopic = ""; 
+        let targetNtfyTopic = ""; 
         let messageSubscription = null;
         let inactivityTimer = null;
         let absoluteSessionTimer = null;
@@ -310,7 +525,6 @@
         let recordingSeconds = 0;
         let isRecording = false;
 
-        // ================= ANIMASI HUJAN HATI =================
         const canvas = document.getElementById('heart-canvas');
         const ctx = canvas.getContext('2d');
         let hearts = [];
@@ -331,8 +545,8 @@
                 this.speedX = (Math.random() - 0.5) * 2;
                 this.rotation = Math.random() * 360;
                 this.rotationSpeed = (Math.random() - 0.5) * 4;
-                this.opacity = Math.random() * 0.5 + 0.5;
-                this.color = ['#ff3366', '#ff6699', '#ff99cc', '#e6005c'][Math.floor(Math.random() * 4)];
+                this.opacity = Math.random() * 0.45 + 0.45;
+                this.color = ['#e05275', '#d97c96', '#f296ae', '#c94a6a'][Math.floor(Math.random() * 4)];
             }
             update() {
                 this.y += this.speedY;
@@ -370,7 +584,6 @@
         }
         animateHearts();
 
-        // ================= EFEK GETAR & AUDIO PING =================
         function playBBMPingSound() {
             try {
                 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -384,7 +597,7 @@
                 osc2.frequency.exponentialRampToValueAtTime(900, audioCtx.currentTime + 0.12);
                 gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
                 gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.22);
-                osc1.connect(gain); osc2.connect(gain); gain.connect(ctx.destination);
+                osc1.connect(gain); osc2.connect(gain); gain.connect(audioCtx.destination);
                 osc1.start(); osc2.start();
                 osc1.stop(audioCtx.currentTime + 0.22); osc2.stop(audioCtx.currentTime + 0.22);
             } catch (e) {}
@@ -398,7 +611,6 @@
             if (navigator.vibrate) navigator.vibrate([120, 60, 120]);
         }
 
-        // Kirim PING Manual (Hanya PING yang memicu ntfy eksternal, getar & suara tetap ada)
         async function sendPingNotification() {
             triggerShakeEffect();
             playBBMPingSound();
@@ -421,7 +633,6 @@
             }
         }
 
-        // ================= KONTROL CHAT & SUPABASE =================
         function showToast(msg) {
             const toast = document.getElementById('toast-modal');
             document.getElementById('toast-message').innerText = msg;
@@ -467,6 +678,7 @@
         });
 
         window.onload = function() {
+            initTheme();
             if (sessionStorage.getItem("chat_auth") === "true") {
                 currentSender = (sessionStorage.getItem("chat_sender") || "").toLowerCase().trim();
                 setupNtfyTopics();
@@ -510,11 +722,11 @@
             for (let i = 1; i <= 4; i++) {
                 const dot = document.getElementById(`dot-${i}`);
                 if (i <= enteredPasscode.length) {
-                    dot.classList.add('bg-[#e87a96]', 'border-[#e87a96]');
-                    dot.classList.remove('border-[#d69aa6]');
+                    dot.style.backgroundColor = 'var(--accent-solid)';
+                    dot.style.borderColor = 'var(--accent-solid)';
                 } else {
-                    dot.classList.remove('bg-[#e87a96]', 'border-[#e87a96]');
-                    dot.classList.add('border-[#d69aa6]');
+                    dot.style.backgroundColor = 'transparent';
+                    dot.style.borderColor = 'var(--dot-border)';
                 }
             }
         }
@@ -538,14 +750,11 @@
             openChatApp();
         }
 
-        // Atur Ruang Ntfy Berdasarkan Pengguna
         function setupNtfyTopics() {
             if (currentSender === "wildanganteng") {
-                // Wildan login (4646): Menerima dari adolb, mengirim ke adolb2
                 myNtfyTopic = "adolb";
                 targetNtfyTopic = "adolb2";
             } else {
-                // Alifa login (6464): Menerima dari adolb2, mengirim ke adolb
                 myNtfyTopic = "adolb2";
                 targetNtfyTopic = "adolb";
             }
@@ -608,13 +817,14 @@
             const todayLabel = new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
             const dayBanner = document.createElement('div');
             dayBanner.className = 'flex justify-center my-2';
-            dayBanner.innerHTML = `<span class="text-[10px] bg-white/80 text-[#8c666d] border border-[#ecc4cd] px-3 py-1 rounded-full font-semibold shadow-2xs">🌸 ${todayLabel} • Mulai 00:00</span>`;
+            dayBanner.innerHTML = `<span class="text-[10px] theme-card px-3 py-1 rounded-full font-semibold shadow-2xs" style="color: var(--text-secondary);">🌸 ${todayLabel} • Mulai 00:00</span>`;
             container.appendChild(dayBanner);
 
             if (!data || data.length === 0) {
                 const emptyNote = document.createElement('p');
                 emptyNote.id = 'empty-today-note';
-                emptyNote.className = 'text-center text-xs text-[#9c767d] mt-8 font-medium';
+                emptyNote.className = 'text-center text-xs mt-8 font-medium';
+                emptyNote.style.color = 'var(--text-secondary)';
                 emptyNote.innerText = 'Belum ada obrolan hari ini. Mulai sapa sekarang! ✨';
                 container.appendChild(emptyNote);
                 return;
@@ -637,7 +847,6 @@
             container.scrollTop = container.scrollHeight;
         }
 
-        // KIRIM PESAN CHAT (Pribadi antar database Supabase, TIDAK memicu notif ntfy)
         async function sendMessage() {
             const input = document.getElementById('message-input');
             const content = input.value.trim();
@@ -707,7 +916,6 @@
             e.target.value = '';
         }
 
-        // Voice Note Recorder
         async function toggleVoiceRecording() {
             if (!isRecording) {
                 await startRecording();
@@ -742,7 +950,8 @@
 
                 mediaRecorder.start();
                 isRecording = true;
-                document.getElementById('mic-btn').classList.add('text-[#d94e67]', 'animate-pulse');
+                document.getElementById('mic-btn').style.color = 'var(--text-danger)';
+                document.getElementById('mic-btn').classList.add('animate-pulse');
                 document.getElementById('recording-indicator').classList.remove('hidden');
                 document.getElementById('recording-indicator').classList.add('flex');
 
@@ -776,7 +985,8 @@
         function resetRecordingUI() {
             isRecording = false;
             clearInterval(recordingInterval);
-            document.getElementById('mic-btn').classList.remove('text-[#d94e67]', 'animate-pulse');
+            document.getElementById('mic-btn').style.color = 'var(--text-secondary)';
+            document.getElementById('mic-btn').classList.remove('animate-pulse');
             document.getElementById('recording-indicator').classList.remove('flex');
             document.getElementById('recording-indicator').classList.add('hidden');
         }
@@ -873,9 +1083,9 @@
             let replyHtml = '';
             if (msg.reply_to_text) {
                 replyHtml = `
-                    <div class="${isLeft ? 'bg-[#fce8ec] border-[#e87a96]' : 'bg-white/45 border-[#c95b76]'} border-l-3 p-1.5 mb-1.5 rounded-lg text-xs">
-                        <span class="font-bold text-[#b84864] block">${escapeHtml(msg.reply_to_sender || '')}</span>
-                        <span class="text-[#5c3d42] truncate block font-medium">${escapeHtml(msg.reply_to_text)}</span>
+                    <div class="${isLeft ? 'reply-box-left' : 'reply-box-right'} border-l-3 p-1.5 mb-1.5 rounded-lg text-xs">
+                        <span class="font-bold block" style="color: var(--text-accent);">${escapeHtml(msg.reply_to_sender || '')}</span>
+                        <span class="truncate block font-medium opacity-85">${escapeHtml(msg.reply_to_text)}</span>
                     </div>
                 `;
             }
@@ -885,7 +1095,7 @@
                 try {
                     const { data } = await supabaseClient.storage.from('chat-images').createSignedUrl(msg.image_path, 3600);
                     if (data && data.signedUrl) {
-                        imageHtml = `<img src="${data.signedUrl}" class="rounded-xl mb-1.5 max-h-60 object-cover shadow-xs cursor-pointer hover:opacity-95 transition border border-white/50" onclick="openImageModal('${data.signedUrl}')">`;
+                        imageHtml = `<img src="${data.signedUrl}" class="rounded-xl mb-1.5 max-h-60 object-cover shadow-xs cursor-pointer hover:opacity-95 transition border border-white/20" onclick="openImageModal('${data.signedUrl}')">`;
                     }
                 } catch(e) {}
             }
@@ -894,7 +1104,7 @@
             if (msg.audio_path) {
                 audioHtml = `
                     <div class="mb-1.5 min-w-[210px] max-w-full">
-                        <audio controls preload="metadata" class="w-full h-9 rounded-xl">
+                        <audio controls preload="metadata" class="w-full h-9 rounded-xl cozy-audio">
                             <source src="${msg.audio_path}" type="audio/mp4">
                             <source src="${msg.audio_path}" type="audio/webm">
                         </audio>
@@ -910,12 +1120,12 @@
                 ${imageHtml}
                 ${audioHtml}
                 ${showText ? `<p class="break-words ${!isArchiveMode ? 'pr-6' : ''} leading-relaxed font-normal">${escapeHtml(msg.content)}</p>` : ''}
-                <span class="text-[9px] text-[#8c666d] float-right ml-2 mt-1 select-none font-medium">${timeStr} ${!isLeft ? '♥' : ''}</span>
+                <span class="text-[9px] float-right ml-2 mt-1 select-none font-medium opacity-70">${timeStr} ${!isLeft ? '♥' : ''}</span>
             `;
 
             if (!isArchiveMode) {
                 const menuBtn = document.createElement('button');
-                menuBtn.className = `absolute top-1.5 right-1.5 opacity-60 sm:opacity-0 group-hover:opacity-100 bg-white/70 text-[#6e4a50] hover:scale-110 rounded-full p-1 transition shadow-2xs`;
+                menuBtn.className = `absolute top-1.5 right-1.5 opacity-60 sm:opacity-0 group-hover:opacity-100 theme-card hover:scale-110 rounded-full p-1 transition shadow-2xs`;
                 menuBtn.innerHTML = `<svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>`;
                 menuBtn.onclick = (e) => {
                     e.stopPropagation();
@@ -933,13 +1143,13 @@
             toggleSidebar();
             const modal = document.getElementById('gallery-modal');
             const grid = document.getElementById('gallery-grid');
-            grid.innerHTML = '<p class="col-span-3 text-center text-xs text-[#8c666d] mt-10 font-bold">Memuat galeri...</p>';
+            grid.innerHTML = '<p class="col-span-3 text-center text-xs mt-10 font-bold" style="color: var(--text-secondary);">Memuat galeri...</p>';
             modal.classList.remove('hidden');
 
             const { data } = await supabaseClient.from('messages').select('image_path, created_at').eq('conversation_id', FIXED_ROOM_ID).not('image_path', 'is', null).order('created_at', { ascending: false });
             grid.innerHTML = '';
             if (!data || data.length === 0) {
-                grid.innerHTML = '<p class="col-span-3 text-center text-xs text-[#8c666d] mt-10 font-bold">Belum ada foto.</p>';
+                grid.innerHTML = '<p class="col-span-3 text-center text-xs mt-10 font-bold" style="color: var(--text-secondary);">Belum ada foto.</p>';
                 return;
             }
 
@@ -948,7 +1158,7 @@
                     const { data: urlData } = await supabaseClient.storage.from('chat-images').createSignedUrl(item.image_path, 3600);
                     if (urlData && urlData.signedUrl) {
                         const imgBox = document.createElement('div');
-                        imgBox.className = 'aspect-square overflow-hidden cursor-pointer bg-white/70 rounded-xl shadow-2xs border border-[#ecc4cd]';
+                        imgBox.className = 'aspect-square overflow-hidden cursor-pointer theme-card rounded-xl shadow-2xs';
                         imgBox.innerHTML = `<img src="${urlData.signedUrl}" class="w-full h-full object-cover hover:scale-105 transition duration-300" onclick="openImageModal('${urlData.signedUrl}')">`;
                         grid.appendChild(imgBox);
                     }
@@ -963,12 +1173,12 @@
             const modal = document.getElementById('archive-modal');
             const content = document.getElementById('archive-content');
             document.getElementById('archive-modal-title').innerText = "Arsip Harian 📖";
-            content.innerHTML = '<p class="text-center text-xs text-[#8c666d] mt-10 font-bold">Memuat arsip...</p>';
+            content.innerHTML = '<p class="text-center text-xs mt-10 font-bold" style="color: var(--text-secondary);">Memuat arsip...</p>';
             modal.classList.remove('hidden');
 
             const { data } = await supabaseClient.from('messages').select('*').eq('conversation_id', FIXED_ROOM_ID).order('created_at', { ascending: false });
             if (!data || data.length === 0) {
-                content.innerHTML = '<p class="text-center text-xs text-[#8c666d] mt-10 font-bold">Belum ada riwayat chat.</p>';
+                content.innerHTML = '<p class="text-center text-xs mt-10 font-bold" style="color: var(--text-secondary);">Belum ada riwayat chat.</p>';
                 return;
             }
 
@@ -988,19 +1198,19 @@
             for (const [rawKey, group] of Object.entries(groupedByDate)) {
                 const isTodayFolder = (rawKey === todayRawKey);
                 const folderBtn = document.createElement('div');
-                folderBtn.className = 'bg-white/85 border border-[#ecc4cd] p-3.5 rounded-2xl shadow-2xs cursor-pointer hover:bg-[#fce3e8] transition flex justify-between items-center';
+                folderBtn.className = 'theme-card p-3.5 rounded-2xl shadow-2xs cursor-pointer transition flex justify-between items-center';
                 folderBtn.innerHTML = `
                     <div class="flex items-center space-x-3 overflow-hidden">
                         <span class="text-2xl shrink-0">${isTodayFolder ? '📂' : '📁'}</span>
                         <div class="truncate">
                             <div class="flex items-center space-x-1.5">
-                                <h3 class="font-bold text-[#4a3236] text-xs sm:text-sm truncate">${group.title}</h3>
-                                ${isTodayFolder ? '<span class="text-[9px] bg-[#f5b7c7] text-[#4a2e33] px-1.5 py-0.5 rounded-full font-bold shrink-0">Hari Ini</span>' : ''}
+                                <h3 class="font-bold text-xs sm:text-sm truncate" style="color: var(--text-primary);">${group.title}</h3>
+                                ${isTodayFolder ? '<span class="text-[9px] text-white px-1.5 py-0.5 rounded-full font-bold shrink-0" style="background: var(--accent-solid);">Hari Ini</span>' : ''}
                             </div>
-                            <p class="text-[10px] text-[#8c666d] font-medium">${group.messages.length} pesan</p>
+                            <p class="text-[10px] font-medium" style="color: var(--text-secondary);">${group.messages.length} pesan</p>
                         </div>
                     </div>
-                    <span class="text-xs text-[#b83b52] font-bold shrink-0 ml-2">Buka →</span>
+                    <span class="text-xs font-bold shrink-0 ml-2" style="color: var(--text-accent);">Buka →</span>
                 `;
                 folderBtn.onclick = () => showDailyArchiveMessages(group.title, group.messages);
                 content.appendChild(folderBtn);
@@ -1013,7 +1223,7 @@
             content.innerHTML = '';
 
             const backBtn = document.createElement('button');
-            backBtn.className = 'w-full mb-2 py-2.5 bg-white/90 hover:bg-[#fce3e8] border border-[#ecc4cd] text-[#4a3236] rounded-xl font-bold text-xs shadow-2xs transition sticky top-0 z-10 backdrop-blur-md';
+            backBtn.className = 'w-full mb-2 py-2.5 theme-card rounded-xl font-bold text-xs shadow-2xs transition sticky top-0 z-10 backdrop-blur-md cursor-pointer';
             backBtn.innerText = '← Kembali ke Daftar Folder';
             backBtn.onclick = () => openArchiveMenu(false);
             content.appendChild(backBtn);

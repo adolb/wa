@@ -2,15 +2,13 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <!-- DI SINI PENGUNCIAN ZOOM DITERAPKAN SECARA KETAT -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Cozy Chat • Adolb</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* ==================== VARIABEL TEMA (PASTEL & NIGHT EYE-CARE) ==================== */
         :root {
             --outer-bg: linear-gradient(45deg, #f7dce2, #fdf2f4, #f4ced7);
             --window-bg: linear-gradient(160deg, #fff6f7 0%, #fce8ec 50%, #f9e1e6 100%);
@@ -59,7 +57,6 @@
             --audio-filter: none;
         }
 
-        /* MODE MALAM */
         [data-theme="dark"] {
             --outer-bg: linear-gradient(145deg, #0b0d11 0%, #12151c 50%, #0e1015 100%);
             --window-bg: linear-gradient(165deg, #161922 0%, #13161e 55%, #101218 100%);
@@ -117,13 +114,11 @@
             75% { transform: translate(-5px, -2px) rotate(-0.5deg); }
             90% { transform: translate(5px, 2px) rotate(0.5deg); }
         }
-        .shake-screen {
-            animation: bbShake 0.45s cubic-bezier(.36,.07,.19,.97) both;
-        }
+        .shake-screen { animation: bbShake 0.45s cubic-bezier(.36,.07,.19,.97) both; }
 
         html, body {
             overscroll-behavior: none;
-            touch-action: pan-x pan-y; /* Mencegah double-tap zoom dan pinch-to-zoom */
+            touch-action: pan-x pan-y;
             width: 100%;
             height: 100%;
             height: 100dvh;
@@ -144,9 +139,7 @@
             transition: background 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease;
         }
 
-        .floral-bg {
-            background-image: var(--floral-bg);
-        }
+        .floral-bg { background-image: var(--floral-bg); }
 
         .cozy-glass-header {
             background: var(--glass-header-bg);
@@ -180,23 +173,17 @@
             color: var(--text-primary);
             transition: all 0.2s ease;
         }
-        .theme-card:hover {
-            background: var(--surface-hover);
-        }
-        .theme-card:active {
-            background: var(--surface-active);
-        }
+        .theme-card:hover { background: var(--surface-hover); }
+        .theme-card:active { background: var(--surface-active); }
 
         .theme-input {
             background: var(--input-bg);
             color: var(--text-primary);
             border: 1px solid var(--surface-border);
             transition: all 0.25s ease;
-            font-size: 16px !important; /* Mencegah auto-zoom otomatis pada form input iOS Safari */
+            font-size: 16px !important;
         }
-        .theme-input::placeholder {
-            color: var(--input-placeholder);
-        }
+        .theme-input::placeholder { color: var(--input-placeholder); }
 
         .bubble-left {
             background: var(--bubble-left-bg);
@@ -212,23 +199,11 @@
             box-shadow: var(--bubble-right-shadow);
         }
 
-        .reply-box-left {
-            background: var(--reply-left-bg);
-            border-color: var(--accent-solid);
-        }
-        .reply-box-right {
-            background: var(--reply-right-bg);
-            border-color: var(--text-accent);
-        }
+        .reply-box-left { background: var(--reply-left-bg); border-color: var(--accent-solid); }
+        .reply-box-right { background: var(--reply-right-bg); border-color: var(--text-accent); }
 
-        audio.cozy-audio {
-            filter: var(--audio-filter);
-        }
-
-        .decor-layer {
-            opacity: var(--decor-opacity);
-            transition: opacity 0.35s ease;
-        }
+        audio.cozy-audio { filter: var(--audio-filter); }
+        .decor-layer { opacity: var(--decor-opacity); transition: opacity 0.35s ease; }
 
         #heart-canvas {
             position: fixed;
@@ -332,7 +307,7 @@
             </div>
 
             <div class="p-4" style="border-top: 1px solid var(--glass-border);">
-                <button onclick="logout()" class="w-full theme-card p-3.5 rounded-2xl font-bold text-sm transition cursor-pointer" style="color: var(--text-danger);">Keluar</button>
+                <button onclick="lockSession()" class="w-full theme-card p-3.5 rounded-2xl font-bold text-sm transition cursor-pointer" style="color: var(--text-danger);">Kunci Sesi</button>
             </div>
         </div>
         <div id="sidebar-overlay" class="absolute inset-0 bg-black/40 z-30 hidden backdrop-blur-xs transition-opacity" onclick="toggleSidebar()"></div>
@@ -346,20 +321,22 @@
                 <div class="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-xs border border-white/30" style="background: var(--accent-btn-bg);">🌸</div>
                 <div>
                     <h1 id="header-title" class="font-bold text-sm tracking-tight" style="color: var(--text-primary);">Chat</h1>
-                    <span id="ntfy-info-badge" class="text-[10px] text-[#7ca882] font-semibold flex items-center gap-1">
-                        <span class="w-1.5 h-1.5 rounded-full bg-[#7ca882] animate-pulse"></span> ntfy: - ♥
+                    <!-- STATUS ONLINE / TYPING / LAST SEEN -->
+                    <span id="presence-status-badge" class="text-[10px] text-[#8e96aa] font-semibold flex items-center gap-1">
+                        <span class="w-1.5 h-1.5 rounded-full bg-[#8e96aa]"></span> Menghubungkan...
                     </span>
                 </div>
             </div>
             
             <div class="flex items-center space-x-1.5">
+                <!-- TOMBOL LOVE REALTIME MURNI (TANPA SPAM) -->
+                <button onclick="sendHeartReaction()" class="w-8 h-8 rounded-full theme-card flex items-center justify-center text-xs transition active:scale-95 cursor-pointer hover:scale-105" title="Kirim Hujan Hati Murni">
+                    ❤️
+                </button>
                 <button onclick="toggleTheme()" class="w-8 h-8 rounded-full theme-card flex items-center justify-center text-xs transition active:scale-95 cursor-pointer" title="Ganti Tema">
                     <span class="theme-icon">🌙</span>
                 </button>
-                <button onclick="triggerHeartRain()" class="w-8 h-8 rounded-full theme-card flex items-center justify-center text-xs transition active:scale-95 cursor-pointer" title="Hujan Hati">
-                    ❤️
-                </button>
-                <button onclick="logout()" class="text-xs theme-card px-3 py-1.5 rounded-full font-bold active:scale-95 transition shadow-2xs cursor-pointer">Keluar</button>
+                <button onclick="lockSession()" class="text-xs theme-card px-3 py-1.5 rounded-full font-bold active:scale-95 transition shadow-2xs cursor-pointer">Kunci</button>
             </div>
         </div>
 
@@ -444,8 +421,8 @@
                 </svg>
             </button>
 
-            <!-- Input Teks -->
-            <input type="text" id="message-input" placeholder="Tulis pesan manis..." class="flex-1 min-w-0 theme-input px-3.5 py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#d97c96] shadow-2xs text-xs sm:text-sm" onkeypress="handleMessageKey(event)">
+            <!-- Input Teks dengan Deteksi Ketik -->
+            <input type="text" id="message-input" placeholder="Tulis pesan manis..." class="flex-1 min-w-0 theme-input px-3.5 py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#d97c96] shadow-2xs text-xs sm:text-sm" oninput="handleTypingInput()" onkeypress="handleMessageKey(event)">
             
             <!-- Tombol Kirim Pesan -->
             <button onclick="sendMessage()" class="text-white w-9 h-9 rounded-full flex items-center justify-center shadow-xs transition active:scale-95 shrink-0 cursor-pointer" style="background: var(--accent-btn-bg);">
@@ -455,8 +432,15 @@
     </div>
 
     <script>
+        function getSafeStorage(type, key) {
+            try { return window[type].getItem(key); } catch (e) { return null; }
+        }
+        function setSafeStorage(type, key, val) {
+            try { window[type].setItem(key, val); } catch (e) {}
+        }
+
         function initTheme() {
-            const savedTheme = localStorage.getItem('cozy_chat_theme') || 'light';
+            const savedTheme = getSafeStorage('localStorage', 'cozy_chat_theme') || 'dark';
             setTheme(savedTheme);
         }
 
@@ -467,7 +451,7 @@
             } else {
                 document.documentElement.removeAttribute('data-theme');
             }
-            localStorage.setItem('cozy_chat_theme', theme);
+            setSafeStorage('localStorage', 'cozy_chat_theme', theme);
 
             document.querySelectorAll('.theme-icon').forEach(el => {
                 el.textContent = isDark ? '🌸' : '🌙';
@@ -513,8 +497,9 @@
         let myNtfyTopic = ""; 
         let targetNtfyTopic = ""; 
         let messageSubscription = null;
-        let inactivityTimer = null;
-        let absoluteSessionTimer = null;
+        let presenceChannel = null;
+        let typingTimeout = null;
+
         let activeReplyTo = null;
         let enteredPasscode = "";
         let renderedMessageIds = new Set();
@@ -611,6 +596,20 @@
             if (navigator.vibrate) navigator.vibrate([120, 60, 120]);
         }
 
+        function sendHeartReaction() {
+            triggerHeartRain();
+            playBBMPingSound();
+            triggerShakeEffect();
+
+            if (presenceChannel) {
+                presenceChannel.send({
+                    type: 'broadcast',
+                    event: 'heart_reaction',
+                    payload: { sender: currentSender }
+                });
+            }
+        }
+
         async function sendPingNotification() {
             triggerShakeEffect();
             playBBMPingSound();
@@ -620,17 +619,10 @@
                 await fetch(`https://ntfy.sh/${targetNtfyTopic}`, {
                     method: 'POST',
                     body: `PING!!⚡`,
-                    headers: {
-                        'Title': 'Panggilan PING!!!',
-                        'Priority': 'urgent',
-                        'Tags': 'zap,bell'
-                    }
+                    headers: { 'Title': 'Panggilan PING!!!', 'Priority': 'urgent', 'Tags': 'zap,bell' }
                 });
                 showToast("Berhasil mengirim PING!");
-            } catch (error) {
-                console.error("Gagal kirim PING:", error);
-                showToast("Gagal mengirim PING jaringan.");
-            }
+            } catch (error) {}
         }
 
         function showToast(msg) {
@@ -653,49 +645,47 @@
             }
         }
 
-        function resetInactivityTimer() {
-            clearTimeout(inactivityTimer);
-            inactivityTimer = setTimeout(() => {
-                if (sessionStorage.getItem("chat_auth") === "true" && !isRecording) {
-                    showToast("Sesi berakhir (1 menit inaktif).");
-                    setTimeout(logout, 1200);
-                }
-            }, 60 * 1000);
-        }
-
-        function startAbsoluteSessionTimer() {
-            clearTimeout(absoluteSessionTimer);
-            absoluteSessionTimer = setTimeout(() => {
-                if (sessionStorage.getItem("chat_auth") === "true") {
-                    showToast("Batas waktu 5 menit habis.");
-                    setTimeout(logout, 1200);
-                }
-            }, 5 * 60 * 1000);
-        }
-
-        ['mousemove', 'keydown', 'touchstart', 'click'].forEach(evt => {
-            window.addEventListener(evt, resetInactivityTimer);
-        });
-
         window.onload = function() {
             initTheme();
-            if (sessionStorage.getItem("chat_auth") === "true") {
-                currentSender = (sessionStorage.getItem("chat_sender") || "").toLowerCase().trim();
+            if (getSafeStorage('sessionStorage', 'chat_auth') === "true") {
+                currentSender = (getSafeStorage('sessionStorage', 'chat_sender') || "").toLowerCase().trim();
                 setupNtfyTopics();
                 openChatApp();
             } else {
-                sessionStorage.clear();
+                try { sessionStorage.clear(); } catch(e) {}
             }
         };
 
+        // Deteksi tab aktif/tertutup untuk update status online & last seen instan
+        window.addEventListener('beforeunload', () => {
+            if (presenceChannel) {
+                presenceChannel.track({
+                    user: currentSender,
+                    status: 'offline',
+                    typing: false,
+                    last_seen: new Date().toISOString()
+                });
+            }
+        });
+
         document.addEventListener("visibilitychange", async function() {
             if (document.visibilityState === 'visible') {
-                if (sessionStorage.getItem("chat_auth") === "true") {
-                    currentSender = (sessionStorage.getItem("chat_sender") || "").toLowerCase().trim();
+                if (getSafeStorage('sessionStorage', 'chat_auth') === "true") {
+                    currentSender = (getSafeStorage('sessionStorage', 'chat_sender') || "").toLowerCase().trim();
                     setupNtfyTopics();
                     await loadTodayMessages();
                     subscribeToRealtime();
+                    setupPresence();
                     scrollToBottom();
+                }
+            } else {
+                if (presenceChannel) {
+                    await presenceChannel.track({
+                        user: currentSender,
+                        status: 'offline',
+                        typing: false,
+                        last_seen: new Date().toISOString()
+                    });
                 }
             }
         });
@@ -738,14 +728,11 @@
                 currentSender = "alifasayang";
             } else {
                 document.getElementById('password-error').innerText = "Passcode salah!";
-                setTimeout(() => {
-                    enteredPasscode = "";
-                    updatePasscodeDots();
-                }, 400);
+                setTimeout(() => { enteredPasscode = ""; updatePasscodeDots(); }, 400);
                 return;
             }
-            sessionStorage.setItem("chat_auth", "true");
-            sessionStorage.setItem("chat_sender", currentSender);
+            setSafeStorage('sessionStorage', 'chat_auth', "true");
+            setSafeStorage('sessionStorage', 'chat_sender', currentSender);
             setupNtfyTopics();
             openChatApp();
         }
@@ -758,14 +745,19 @@
                 myNtfyTopic = "adolb2";
                 targetNtfyTopic = "adolb";
             }
-            document.getElementById('ntfy-info-badge').innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-[#7ca882] animate-pulse"></span> ntfy: ${myNtfyTopic} ♥`;
         }
 
-        function logout() {
+        function lockSession() {
             if (isRecording) cancelRecording();
-            sessionStorage.removeItem("chat_auth");
-            sessionStorage.removeItem("chat_sender");
-            sessionStorage.clear();
+            if (presenceChannel) {
+                presenceChannel.track({
+                    user: currentSender,
+                    status: 'offline',
+                    typing: false,
+                    last_seen: new Date().toISOString()
+                });
+            }
+            try { sessionStorage.clear(); } catch(e) {}
             location.reload();
         }
 
@@ -775,8 +767,7 @@
             await ensureRoomExists();
             await loadTodayMessages();
             subscribeToRealtime();
-            resetInactivityTimer();
-            startAbsoluteSessionTimer();
+            setupPresence();
         }
 
         async function ensureRoomExists() {
@@ -785,15 +776,12 @@
                 if (!data) {
                     await supabaseClient.from('conversations').insert({ id: FIXED_ROOM_ID, user1: 'alifasayang', user2: 'wildanganteng' });
                 }
-            } catch (e) {
-                console.warn("Cek room:", e);
-            }
+            } catch (e) {}
         }
 
         function getStartOfTodayISO() {
             const now = new Date();
-            const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
-            return startOfDay.toISOString();
+            return new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0).toISOString();
         }
 
         async function loadTodayMessages() {
@@ -805,10 +793,7 @@
                 .gte('created_at', startOfToday)
                 .order('created_at', { ascending: true });
 
-            if (error) {
-                showToast("Gagal memuat pesan: " + error.message);
-                return;
-            }
+            if (error) return;
 
             const container = document.getElementById('messages-container');
             container.innerHTML = '';
@@ -831,13 +816,7 @@
             }
             
             for (const msg of data) {
-                try {
-                    if (msg.content || msg.image_path || msg.audio_path) {
-                        await appendMessageToUI(msg, container);
-                    }
-                } catch (err) {
-                    console.error("Error rendering pesan:", err);
-                }
+                try { await appendMessageToUI(msg, container); } catch (err) {}
             }
             scrollToBottom();
         }
@@ -847,10 +826,93 @@
             container.scrollTop = container.scrollHeight;
         }
 
+        // ================= SUPABASE PRESENCE & BROADCAST =================
+        function setupPresence() {
+            if (presenceChannel) supabaseClient.removeChannel(presenceChannel);
+
+            presenceChannel = supabaseClient.channel('room-presence', {
+                config: { presence: { key: currentSender } }
+            });
+
+            presenceChannel
+                .on('presence', { event: 'sync' }, () => {
+                    const state = presenceChannel.presenceState();
+                    updatePresenceUI(state);
+                })
+                .on('broadcast', { event: 'heart_reaction' }, payload => {
+                    if (payload.payload && payload.payload.sender !== currentSender) {
+                        playBBMPingSound();
+                        triggerShakeEffect();
+                        triggerHeartRain();
+                    }
+                })
+                .subscribe(async (status) => {
+                    if (status === 'SUBSCRIBED') {
+                        await presenceChannel.track({
+                            user: currentSender,
+                            status: 'online',
+                            typing: false,
+                            last_seen: new Date().toISOString()
+                        });
+                    }
+                });
+        }
+
+        function updatePresenceUI(state) {
+            const badge = document.getElementById('presence-status-badge');
+            let partnerOnline = false;
+            let partnerTyping = false;
+            let partnerLastSeen = null;
+
+            for (const [key, presences] of Object.entries(state)) {
+                if (key !== currentSender && presences.length > 0) {
+                    const latest = presences[presences.length - 1];
+                    if (latest.status === 'online') partnerOnline = true;
+                    if (latest.typing) partnerTyping = true;
+                    if (latest.last_seen) partnerLastSeen = latest.last_seen;
+                }
+            }
+
+            if (partnerTyping) {
+                badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-[#f296ae] animate-ping"></span> Sedang mengetik...`;
+            } else if (partnerOnline) {
+                badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-[#7ca882] animate-pulse"></span> Online`;
+            } else if (partnerLastSeen) {
+                const timeFormatted = new Date(partnerLastSeen).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-[#8e96aa]"></span> Terakhir dilihat ${timeFormatted}`;
+            } else {
+                badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-[#8e96aa]"></span> Offline`;
+            }
+        }
+
+        function handleTypingInput() {
+            if (!presenceChannel) return;
+            presenceChannel.track({
+                user: currentSender,
+                status: 'online',
+                typing: true,
+                last_seen: new Date().toISOString()
+            });
+
+            clearTimeout(typingTimeout);
+            typingTimeout = setTimeout(() => {
+                presenceChannel.track({
+                    user: currentSender,
+                    status: 'online',
+                    typing: false,
+                    last_seen: new Date().toISOString()
+                });
+            }, 1800);
+        }
+
         async function sendMessage() {
             const input = document.getElementById('message-input');
             const content = input.value.trim();
             if (!content) return;
+
+            if (presenceChannel) {
+                presenceChannel.track({ user: currentSender, status: 'online', typing: false, last_seen: new Date().toISOString() });
+            }
 
             const { data, error } = await supabaseClient
                 .from('messages')
@@ -864,12 +926,9 @@
                 })
                 .select();
 
-            if (error) {
-                showToast('Gagal mengirim: ' + error.message);
-            } else {
+            if (!error) {
                 input.value = '';
                 cancelReply();
-
                 if (data && data.length > 0) {
                     const emptyNote = document.getElementById('empty-today-note');
                     if (emptyNote) emptyNote.remove();
@@ -889,11 +948,7 @@
             const imagePath = `${FIXED_ROOM_ID}/${currentSender}/${fileName}`;
 
             const { error: uploadError } = await supabaseClient.storage.from('chat-images').upload(imagePath, file);
-            if (uploadError) {
-                showToast('Gagal mengunggah gambar: ' + uploadError.message);
-                e.target.value = '';
-                return;
-            }
+            if (uploadError) { showToast('Gagal mengunggah gambar.'); e.target.value = ''; return; }
 
             const { data, error } = await supabaseClient.from('messages').insert({
                 conversation_id: FIXED_ROOM_ID,
@@ -904,9 +959,7 @@
                 reply_to_sender: activeReplyTo ? activeReplyTo.sender_name : null
             }).select();
 
-            if (error) {
-                showToast('Gagal mengirim foto: ' + error.message);
-            } else if (data && data.length > 0) {
+            if (!error && data && data.length > 0) {
                 const emptyNote = document.getElementById('empty-today-note');
                 if (emptyNote) emptyNote.remove();
                 await appendMessageToUI(data[0], document.getElementById('messages-container'));
@@ -917,18 +970,11 @@
         }
 
         async function toggleVoiceRecording() {
-            if (!isRecording) {
-                await startRecording();
-            } else {
-                stopAndSendRecording();
-            }
+            if (!isRecording) { await startRecording(); } else { stopAndSendRecording(); }
         }
 
         async function startRecording() {
-            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                showToast("Browser tidak mendukung rekaman suara.");
-                return;
-            }
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return;
             audioChunks = [];
             recordingSeconds = 0;
             document.getElementById('recording-timer').innerText = "00:00";
@@ -962,9 +1008,7 @@
                     document.getElementById('recording-timer').innerText = `${mins}:${secs}`;
                     if (recordingSeconds >= 120) stopAndSendRecording();
                 }, 1000);
-            } catch (err) {
-                showToast("Izin mikrofon ditolak.");
-            }
+            } catch (err) {}
         }
 
         function cancelRecording() {
@@ -998,10 +1042,7 @@
             const audioPath = `${FIXED_ROOM_ID}/${currentSender}/${fileName}`;
 
             const { error: uploadError } = await supabaseClient.storage.from('chat-audios').upload(audioPath, audioBlob, { contentType: mimeType });
-            if (uploadError) {
-                showToast("Gagal upload VN: " + uploadError.message);
-                return;
-            }
+            if (uploadError) return;
 
             const { data: publicUrlData } = supabaseClient.storage.from('chat-audios').getPublicUrl(audioPath);
             const { data, error } = await supabaseClient.from('messages').insert({
@@ -1055,13 +1096,13 @@
                         try {
                             const emptyNote = document.getElementById('empty-today-note');
                             if (emptyNote) emptyNote.remove();
+                            
                             playBBMPingSound();
                             triggerShakeEffect();
+
                             await appendMessageToUI(newMsg, document.getElementById('messages-container'));
                             scrollToBottom();
-                        } catch (err) {
-                            console.error("Realtime render error:", err);
-                        }
+                        } catch (err) {}
                     }
                 })
                 .subscribe();

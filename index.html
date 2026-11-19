@@ -307,7 +307,7 @@
             </div>
 
             <div class="p-4" style="border-top: 1px solid var(--glass-border);">
-                <button onclick="lockSession()" class="w-full theme-card p-3.5 rounded-2xl font-bold text-sm transition cursor-pointer" style="color: var(--text-danger);">Kunci Sesi</button>
+                <button onclick="logout()" class="w-full theme-card p-3.5 rounded-2xl font-bold text-sm transition cursor-pointer" style="color: var(--text-danger);">Kunci Sesi</button>
             </div>
         </div>
         <div id="sidebar-overlay" class="absolute inset-0 bg-black/40 z-30 hidden backdrop-blur-xs transition-opacity" onclick="toggleSidebar()"></div>
@@ -322,21 +322,21 @@
                 <div>
                     <h1 id="header-title" class="font-bold text-sm tracking-tight" style="color: var(--text-primary);">Chat</h1>
                     <!-- STATUS ONLINE / TYPING / LAST SEEN -->
-                    <span id="presence-status-badge" class="text-[10px] text-[#8e96aa] font-semibold flex items-center gap-1">
-                        <span class="w-1.5 h-1.5 rounded-full bg-[#8e96aa]"></span> Menghubungkan...
+                    <span id="presence-status-badge" class="text-[10px] text-[#7ca882] font-semibold flex items-center gap-1">
+                        <span class="w-1.5 h-1.5 rounded-full bg-[#7ca882] animate-pulse"></span> Offline
                     </span>
                 </div>
             </div>
             
             <div class="flex items-center space-x-1.5">
-                <!-- TOMBOL LOVE REALTIME MURNI (TANPA SPAM) -->
-                <button onclick="sendHeartReaction()" class="w-8 h-8 rounded-full theme-card flex items-center justify-center text-xs transition active:scale-95 cursor-pointer hover:scale-105" title="Kirim Hujan Hati Murni">
+                <!-- TOMBOL LOVE REALTIME (TANPA RIWAYAT / SPAM) -->
+                <button onclick="sendHeartReaction()" class="w-8 h-8 rounded-full theme-card flex items-center justify-center text-xs transition active:scale-95 cursor-pointer hover:scale-105" title="Kirim Reaksi Hujan Hati Murni">
                     ❤️
                 </button>
                 <button onclick="toggleTheme()" class="w-8 h-8 rounded-full theme-card flex items-center justify-center text-xs transition active:scale-95 cursor-pointer" title="Ganti Tema">
                     <span class="theme-icon">🌙</span>
                 </button>
-                <button onclick="lockSession()" class="text-xs theme-card px-3 py-1.5 rounded-full font-bold active:scale-95 transition shadow-2xs cursor-pointer">Kunci</button>
+                <button onclick="logout()" class="text-xs theme-card px-3 py-1.5 rounded-full font-bold active:scale-95 transition shadow-2xs cursor-pointer">Kunci</button>
             </div>
         </div>
 
@@ -499,6 +499,7 @@
         let messageSubscription = null;
         let presenceChannel = null;
         let typingTimeout = null;
+        let lastSeenTime = null;
 
         let activeReplyTo = null;
         let enteredPasscode = "";
@@ -596,6 +597,7 @@
             if (navigator.vibrate) navigator.vibrate([120, 60, 120]);
         }
 
+        // MENGIRIM REAKSI LOVE MURNI (TANPA MENYIMPAN KE TABEL PESAN / TANPA SPAM HISTORY)
         function sendHeartReaction() {
             triggerHeartRain();
             playBBMPingSound();
@@ -656,18 +658,6 @@
             }
         };
 
-        // Deteksi tab aktif/tertutup untuk update status online & last seen instan
-        window.addEventListener('beforeunload', () => {
-            if (presenceChannel) {
-                presenceChannel.track({
-                    user: currentSender,
-                    status: 'offline',
-                    typing: false,
-                    last_seen: new Date().toISOString()
-                });
-            }
-        });
-
         document.addEventListener("visibilitychange", async function() {
             if (document.visibilityState === 'visible') {
                 if (getSafeStorage('sessionStorage', 'chat_auth') === "true") {
@@ -680,12 +670,7 @@
                 }
             } else {
                 if (presenceChannel) {
-                    await presenceChannel.track({
-                        user: currentSender,
-                        status: 'offline',
-                        typing: false,
-                        last_seen: new Date().toISOString()
-                    });
+                    await presenceChannel.track({ user: currentSender, status: 'offline', last_seen: new Date().toISOString(), typing: false });
                 }
             }
         });
@@ -747,15 +732,10 @@
             }
         }
 
-        function lockSession() {
+        function logout() {
             if (isRecording) cancelRecording();
             if (presenceChannel) {
-                presenceChannel.track({
-                    user: currentSender,
-                    status: 'offline',
-                    typing: false,
-                    last_seen: new Date().toISOString()
-                });
+                presenceChannel.track({ user: currentSender, status: 'offline', last_seen: new Date().toISOString(), typing: false });
             }
             try { sessionStorage.clear(); } catch(e) {}
             location.reload();
@@ -826,7 +806,7 @@
             container.scrollTop = container.scrollHeight;
         }
 
-        // ================= SUPABASE PRESENCE & BROADCAST =================
+        // ================= PRESENCE & BROADCAST CHANNEL =================
         function setupPresence() {
             if (presenceChannel) supabaseClient.removeChannel(presenceChannel);
 
